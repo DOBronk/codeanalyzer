@@ -76,7 +76,7 @@ class IssueController extends Controller
         $item->save();
 
         try{
-            $issue->git_url = $git->createIssue($job->owner,$job->repo,$data['title'],$data['issuetext']);
+            $issue->git_url = $git->createIssue($job->owner,$job->repo,$data['title'],$data['issuetext'], apikey: auth()->user()->settings->gh_api_key);
             $issue->save();
         }
         catch (\Exception $e) {

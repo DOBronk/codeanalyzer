@@ -29,7 +29,7 @@ class CodeAnalyzerController extends Controller
         $branch = $data['branch'] ?? 'main';
 
         try {
-            $items = $git->getPhpFilesFromTree($owner, $repo, $branch);
+            $items = $git->getPhpFilesFromTree($owner, $repo, $branch, auth()->user()->settings->gh_api_key);
         } catch (\Exception $e) {
             return redirect()->back()->withError($e->getMessage());
         }

@@ -22,10 +22,10 @@ class GithubService
      * @param string $sha Optional: SHA code for tree (defaults to main)
      * @return array|null Returns an associative array with SHA codes to all blobs or returns null on failure
      */
-    public function getPhpFilesFromTree(string $owner, string $repo, string $sha = "main"): array|null
+    public function getPhpFilesFromTree(string $owner, string $repo, string $sha = "main", string $apikey): array|null
     {
         $uri = "{$this->uri}/repos/{$owner}/{$repo}/git/trees/{$sha}";
-        $http = $this->httpClient()->get($uri, ['recursive' => 1]);
+        $http = $this->httpClient($apikey)->get($uri, ['recursive' => 1]);
 
         switch ($http->status()) {
             case 200:
@@ -33,6 +33,8 @@ class GithubService
                 return array_filter($response, function ($item) {
                     return $item['type'] === "blob" && str_ends_with($item['path'], '.php');
                 });
+            case 401:
+                    throw new \Exception('Login failed, please check your API key settings');
             case 404:
                 throw new ResourceNotFoundException('Resource not found!');
             case 409:
@@ -50,10 +52,10 @@ class GithubService
      * @param string $sha SHA code for blob
      * @return string|null Return blob as string or null on failure
      */
-    public function getBlob(string $owner, string $repo, string $sha): string|null
+    public function getBlob(string $owner, string $repo, string $sha, string $apikey): string|null
     {
         $uri = "{$this->uri}/repos/{$owner}/{$repo}/git/blobs/{$sha}";
-        $http = $this->httpClient()->get($uri);
+        $http = $this->httpClient($apikey)->get($uri);
         Log::info("Blob: {$sha} http: {$http}");
 
         $json = $http->json();
@@ -71,10 +73,10 @@ class GithubService
      * @param string $body
      * @return bool
      */
-    public function createIssue(string $owner, string $repo, string $title, string $body): string
+    public function createIssue(string $owner, string $repo, string $title, string $body, string $apikey): string
     {
         $uri = "{$this->uri}/repos/{$owner}/{$repo}/issues";
-        $http = $this->httpClient()->post($uri, [
+        $http = $this->httpClient($apikey)->post($uri, [
             'title' => $title,
             'body' => $body,
             'labels' => ['AI Generated Issue']
@@ -87,14 +89,19 @@ class GithubService
                 }else{
                     return '';
                 }
+            case 401:
+                throw new \Exception('Login failed, please check your API key settings');
             case 410:
                 throw new \Exception('Issues are disabled for this repository');
             default:
-                throw new \Exception('Unknown status code');
+                throw new \Exception('Unknown status code: ' . $http->status());
         }
     }
-    private function httpClient(): PendingRequest
+
+
+    private function httpClient(string $apikey): PendingRequest
     {
-        return Http::withHeaders(["Authorization" => "Bearer {$this->key}"]);
+        return Http::withHeaders(["Authorization" => "Bearer " . $apikey]); 
+        //  return Http::withHeaders(["Authorization" => "Bearer {$this->key}"]);
     }
 }

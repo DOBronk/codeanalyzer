@@ -8,6 +8,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use App\Services\GithubService;
 use App\Services\MessageBroker;
 use App\Models\Jobs;
+use App\Models\User;
 use App\DTO\JobDTO;
 use App\Events\BrokerQueueError;
 
@@ -31,13 +32,13 @@ class SendBrokerQueueJob implements ShouldQueue
     {
         try {
             foreach ($this->userjob->items as $item) {
-                $code = $git->getBlob($this->userjob->owner, $this->userjob->repo, $item->blob_sha);
+                $code = $git->getBlob($this->userjob->owner, $this->userjob->repo, $item->blob_sha, User::find($this->userjob->user_id)->settings->gh_api_key);
                 $task = new JobDTO($this->userjob->id, $this->userjob->user_id, $item->id, $code);
                 $broker->addJob($task->toJson());
             }
         } catch (\Exception $e)
         {
-            BrokerQueueError::dispatch($this->userjob);
+            BrokerQueueError::dispatch($this->userjob, $e->getMessage(), User::find($this->userjob->user_id));
         }
     }
 }
