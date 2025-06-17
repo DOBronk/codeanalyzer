@@ -48,6 +48,8 @@ class User extends Authenticatable
 
     public function settings()
     {
-        return Settings::firstOrCreate(['user_id' => $this->id]);
+        Settings::firstOrCreate(['user_id' => $this->id]);
+        
+        return $this->hasOne(Settings::class);
     }
 }
