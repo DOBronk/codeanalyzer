@@ -12,10 +12,16 @@ use App\Utilities\TreeBuilder;
 
 class CodeAnalyzerController extends Controller
 {
+    /**
+     * Show first step of multi-step create job form
+     */
     public function createStepOne()
     {
         return view('jobs.createjob1');
     }
+    /**
+     * Show second step of multi-step create job form
+     */
     public function createStepTwo(Request $request, GitHubService $git)
     {
         $data = $request->validate([
@@ -29,7 +35,7 @@ class CodeAnalyzerController extends Controller
         $branch = $data['branch'] ?? 'main';
 
         try {
-            $items = $git->getPhpFilesFromTree($owner, $repo, $branch, auth()->user()->settings->gh_api_key);
+            $items = $git->getPhpFilesFromTree($owner, $repo, $branch, $request->user()->settings->gh_api_key);
         } catch (\Exception $e) {
             return redirect()->back()->withError($e->getMessage());
         }
@@ -41,7 +47,9 @@ class CodeAnalyzerController extends Controller
             'items' => TreeBuilder::buildTree($items),
         ]);
     }
-
+    /**
+     * Handle first step of multi-step create job form
+     */
     public function postCreateStepOne(Request $request)
     {
         $data = $request->validate([
@@ -56,6 +64,9 @@ class CodeAnalyzerController extends Controller
             'branch' => $data['branch']
         ]);
     }
+    /**
+     * Handle second step of multi-step create job form
+     */
     public function postCreateStepTwo(Request $request)
     {
         $data = $request->validate([
