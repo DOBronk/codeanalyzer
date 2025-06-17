@@ -16,7 +16,7 @@ class SettingsController extends Controller
         $data = $request->validate(['apikey' => 'string|max:255']);
 
         try {
-            auth()->user()->settings()->update(['gh_api_key' => $data['apikey']]);
+            $request->user()->settings()->update(['gh_api_key' => $data['apikey']]);
         } catch (\Exception $e) {
             return redirect()->back()->withError('Kon API key niet opslaan');
         }
