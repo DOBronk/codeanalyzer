@@ -17,14 +17,6 @@ class Jobissues extends Model
         return $this->belongsTo(Jobs::class);
     }
 
-    public function cropText()
-    {
-        if(strlen($this->text) > 20)
-        {
-            return substr($this->text,0, 50)."...";
-        }
-        return $this->text;
-    }
     public function scopeCurrentUser($query): Builder
     {
         return $query->where('user_id', '=', auth()->id());

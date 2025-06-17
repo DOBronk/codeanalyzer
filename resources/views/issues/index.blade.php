@@ -29,7 +29,7 @@
                             <td class="py-2 px-4">{{ $item->job->repo }}</td>
                             <td class="py-2 px-4">{{ $item->job->branch }}</td>
                             <td class="py-2 px-4">{{ $item->title }}</td>
-                            <td class="py-2 px-4">{{ $item->cropText() }}</td>
+                            <td class="py-2 px-4">{{ Str::limit($item->text, 50) }}</td>
                             <td class="py-2 px-4">
                                 <a href="{{ route('codeanalyzer.showissue', ['id' => $item->id]) }}">Toon issue</a><br>
                                 <a href="{{ $item->git_url }}">Github link</a>
