@@ -1,11 +1,10 @@
-@extends('layouts.master')
-
-@section('page', 'Jobs')
-
-@section('content')
+<x-app-layout>
+        <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Jobs') }}
+        </h2>
+    </x-slot>
 <div class="container mx-auto px-4 py-6">
-    <h1 class="text-3xl font-bold mb-6">Code analyse startpagina</h1>
-
     @if($items->count() > 0)
         <p class="mb-4 text-lg font-semibold">Aangemaakte jobs:</p>
         <div class="overflow-x-auto">
@@ -31,7 +30,7 @@
                             <td class="py-2 px-4">{{ count($item->items) }}</td>
                             <td class="py-2 px-4">{{ $item->active }}</td>
                             <td class="py-2 px-4">
-                                <a href="{{ route('codeanalyzer.job', ['id' => $item->id]) }}" class="text-blue-600 hover:underline">Toon details</a>
+                                <a href="{{ route('codeanalyzer.job', ['jobs' => $item]) }}" class="text-blue-600 hover:underline">Toon details</a>
                             </td>
                         </tr>
                     @endforeach
@@ -49,4 +48,4 @@
         <p class="mb-2 text-red-600 font-semibold">Er staat nog een job in de wacht, u kunt geen nieuwe jobs aanmaken</p>
     @endcan
 </div>
-@endsection
+</x-app-layout>

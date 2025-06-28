@@ -1,10 +1,10 @@
-@extends('layouts.master')
-
-@section('page', 'Code analyse')
-
-@section('content')
+<x-app-layout>
+        <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Job aanmaken') }}
+        </h2>
+    </x-slot>
 <div class="container mx-auto px-4 py-6 max-w-lg">
-    <h1 class="text-3xl font-bold mb-6">Code analyse nieuwe job aanmaken</h1>
     <p class="mb-4">{{ __('Geef een git repository op') }}</p>
 
     @if (Session('error'))
@@ -33,4 +33,4 @@
         </div>
     </form>
 </div>
-@endsection
+</x-app-layout>

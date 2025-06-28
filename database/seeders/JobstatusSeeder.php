@@ -13,21 +13,6 @@ class JobstatusSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('codeanalyzer_job_status')->insert([
-            'id' => 0,
-            'name' => 'In wachtrij',
-        ]);
-        DB::table('codeanalyzer_job_status')->insert([
-            'id' => 1,
-            'name' => 'Verwerkt',
-        ]);
-        DB::table('codeanalyzer_job_status')->insert([
-            'id' => 2,
-            'name' => 'Fout',
-        ]);
-        DB::table('codeanalyzer_job_status')->insert([
-            'id' => 3,
-            'name' => 'Issue aangemaakt',
-        ]);
+
     }
 }

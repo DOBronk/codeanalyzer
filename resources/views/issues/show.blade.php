@@ -1,10 +1,10 @@
-@extends('layouts.master')
-
-@section('page', 'Toon issue')
-
-@section('content')
+<x-app-layout>
+        <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Issue tonen') }}
+        </h2>
+    </x-slot>
 <div class="container mx-auto px-4 py-6">
-    <h1 class="text-3xl font-bold mb-6">Code analyse toon issue</h1><br>
     <table class="min-w-full bg-white border border-gray-200 rounded-md shadow-sm">
         <thead>
             <tr class="bg-gray-100 border-b border-gray-300">
@@ -26,4 +26,4 @@
     <p class="mb-4 text-lg font-semibold">Text:</p>
     <div style="white-space: pre-wrap;">{{ $item->text }}</div><br>
     <a href="{{ $item->git_url }}">Link naar issue in github</a>
-@endsection
+</x-app-layout>

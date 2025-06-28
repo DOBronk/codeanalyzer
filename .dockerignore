@@ -1,0 +1,98 @@
+# 1. Version control
+.git/
+.gitignore
+.gitattributes
+
+# 2. Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# 3. PHP Composer dependencies (if vendor is not needed in image)
+vendor/
+
+# 4. IDE/editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime*
+*.DS_Store
+
+# 5. Build and output directories
+public/build/
+dist/
+build/
+out/
+tmp/
+temp/
+
+# 6. Test and coverage artifacts
+test/
+tests/
+phpunit.xml
+phpunit.xml.dist
+.phpunit.result.cache
+coverage/
+*.cover
+*.coverage
+
+# 7. Cache and debug files
+.cache/
+*.log
+*.tmp
+*.bak
+*.old
+
+# 8. Environment and secrets
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.crt
+
+# 9. Documentation and markdown
+README*
+*.md
+docs/
+
+# 10. Docker and Compose files (do not copy host configs)
+Dockerfile*
+docker-compose*
+docker/
+compose.*.yaml
+compose.*.yml
+
+# 11. Miscellaneous
+*.local
+*.local.*
+config.local.*
+*.local.yml
+*.local.yaml
+
+# 12. OS generated files
+Thumbs.db
+.DS_Store
+
+# 13. Laravel/Lumen specific
+/storage/
+/storage/app/
+/storage/framework/
+/storage/logs/
+/storage/debugbar/
+
+# 14. Database artifacts
+database/*.sqlite
+database/*.sqlite3
+
+# 15. Shortcuts and links
+*.lnk
+
+# 16. Exclude files/directories that should be included (negate if needed)
+!public/
+!resources/
+!config/
+!app/
+!routes/

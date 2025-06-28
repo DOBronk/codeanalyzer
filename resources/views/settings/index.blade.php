@@ -1,12 +1,10 @@
-@extends('layouts.master')
-
-@section('page', 'Instellingen')
-
-@section('content')
-
+<x-app-layout>
+        <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Instellingen') }}
+        </h2>
+    </x-slot>
 <div class="container mx-auto px-4 py-6 max-w-lg">
-    <h1 class="text-3xl font-bold mb-6">Instellingen</h1>
-
     @if (Session('error'))
         <p class="mb-4 text-red-600 font-semibold">Foutmelding: {{ session('error') }}</p>
     @endif
@@ -28,5 +26,4 @@
         </div>
     </form>
 </div>
-
-@endsection
+</x-app-layout>

@@ -12,6 +12,7 @@ class Jobissues extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [];
+
     public function job()
     {
         return $this->belongsTo(Jobs::class);

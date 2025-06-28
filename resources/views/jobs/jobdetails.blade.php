@@ -1,11 +1,10 @@
-@extends('layouts.master')
-
-@section('page', 'Code analyse')
-
-@section('content')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Job details') }}
+        </h2>
+    </x-slot>
 <div class="container mx-auto px-4 py-6">
-    <h1 class="text-3xl font-bold mb-6">Job details</h1>
-
     @if(Session('message'))
         <p class="mb-4 text-red-600 font-semibold">{{ Session('message') }}</p>
     @endif
@@ -52,20 +51,22 @@
                         <td class="py-2 px-4">{{ $item->status->name }}</td>
                         @if($item->status_id == 1 || $item->status_id == 3)
                             @if($item->results != null)
-                            @if(count($item->results) > 0)
                                 <td class="py-2 px-4">
-                                    <textarea rows="10" cols="50" name="result{{ $item->id }}" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">@foreach($item->results as $name => $value){{ $name }}:{{ $value }}@endforeach</textarea>
+                                    <textarea rows="5" cols="50" name="result{{ $item->id }}" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">{{ $item->resultsToString() }}</textarea>
                                 </td>
                             @else
-                                <td class="py-2 px-4">-</td>
-                            @endif
+                                <td class="py-2 px-4">Geen aanmerkingen</td>
                             @endif
                         @else
                             <td class="py-2 px-4">-</td>
                         @endif
-                        
-                        @if($item->status_id == 1)
-                            <td class="py-2 px-4"><a href="{{ route('codeanalyzer.createissue', ['id' => $item->id]) }}">Issue aanmaken</a></td>
+
+                        @if($item->status_id == 1 && $item->results != null)
+                            <td class="py-2 px-4">
+                                <form action="{{ route('codeanalyzer.createissue', ['id' => $item->id]) }}">
+                                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Issue aanmaken</button>
+                                </form>
+                            </td>
                         @else
                             <td class="py-2 px-4">-</td>
                         @endif
@@ -75,4 +76,4 @@
         </table>
     </div>
 </div>
-@endsection
+</x-app-layout>

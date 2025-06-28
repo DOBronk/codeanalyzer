@@ -1,0 +1,77 @@
+services:
+  php-app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: php-app
+    restart: unless-stopped
+    init: true
+    working_dir: /var/www
+    # env_file: ./.env  # Uncomment if .env file exists
+    depends_on:
+      - mysql-db
+      - redis-cache
+      - rabbitmq-broker
+    networks:
+      - backend
+    expose:
+      - "9000"  # php-fpm default port
+    # If you want to run artisan commands, consider using docker exec
+
+  mysql-db:
+    image: mysql:latest
+    container_name: mysql-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  redis-cache:
+    image: redis:latest
+    container_name: redis-cache
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  rabbitmq-broker:
+    image: rabbitmq:latest
+    container_name: rabbitmq-broker
+    restart: unless-stopped
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local

@@ -15,6 +15,15 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('codeanalyzer.index')" :active="request()->routeIs('codeanalyzer.index')">
+                        {{ __('Jobs') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('codeanalyzer.issues')" :active="request()->routeIs('codeanalyzer.issues')">
+                        {{ __('Issues') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('codeanalyzer.settings')" :active="request()->routeIs('codeanalyzer.settings')">
+                        {{ __('Instellingen') }}
+                    </x-nav-link>
                 </div>
             </div>
 

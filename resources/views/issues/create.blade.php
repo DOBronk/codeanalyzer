@@ -1,9 +1,9 @@
-@extends('layouts.master')
-
-@section('page', 'Code analyse')
-
-@section('content')
-
+<x-app-layout>
+        <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Issue aanmaken') }}
+        </h2>
+    </x-slot>
 <div class="container mx-auto px-4 py-6">
     @if (Session('error'))
         <p class="mb-4 text-red-600 font-semibold">Foutmelding: {{ session('error') }}</p>
@@ -11,8 +11,6 @@
 
     <form action="{{ route('codeanalyzer.storeissue', ['id' => $item->id]) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
-        <h1 class="text-3xl font-bold mb-6">Issue aanmaken</h1>
-
         <p class="mb-2 font-semibold">Bestand: {{ $item->path }}</p>
         <p class="mb-2 font-semibold">Titel: <input type="text" name="title" /></p>
         <p class="mb-2 font-semibold">Text:</p>
@@ -20,5 +18,4 @@
         <x-primary-button>Aanmaken</x-primary-button>
     </form>
 </div>
-
-@endsection
+</x-app-layout>
