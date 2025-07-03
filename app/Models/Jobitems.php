@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class Jobitems extends Model
 {
@@ -17,14 +19,20 @@ class Jobitems extends Model
         return $this->belongsTo(Jobstatus::class);
     }
 
-    public function hasImprovements($arr)
+    private function hasImprovements($arr, $val = null)
     {
-        return array_filter($arr, function ($item) {
-            if (!is_array($item)) {
-                return !($item === "OK" | $item === "N/A");
-            } else {
-                return true;
+        return Cache::remember('results_' . $this->id, 180000, function () use ($arr) {
+            if ($arr == null) {
+                return [];
             }
+
+            return array_filter($arr, function ($item) {
+                if (! is_array($item)) {
+                    return $item != 1;
+                } else {
+                    return true;
+                }
+            });
         });
     }
     protected function results(): Attribute
@@ -36,22 +44,32 @@ class Jobitems extends Model
 
     public function resultsToString(): string
     {
-        $text = "";
+        return Cache::remember('results_string_' . $this->id, 180000, function () {
+            $text = "";
+            if ($this->results) {
+                foreach ($this->results as $name => $value) {
+                    if (! is_array($value)) {
+                        $text .= "{$name}: {$value}\r\n\r\n";
+                    } else {
+                        try {
+                            $text .= "{$name}:\r\n";
 
-        if ($this->results) {
-            foreach ($this->results as $name => $value) {
-                if (! is_array($value)) {
-                    $text .= "{$name}: {$value}\r\n\r\n";
-                } else {
-                    $text .= "{$name}:\r\n";
-                    foreach ($value as $key => $val) {
-                        $text .= "{$key}: {$val}\r\n";
+                            foreach ($value as $key => $val) {
+                                if (is_array($val)) {
+                                    $text .= implode(':', $val);
+                                } else {
+                                    $text .= "{$key}: {$val}\r\n";
+                                }
+                            }
+                        } catch (\Exception $e) {
+                            dd($e->getMessage());
+                        }
                     }
                 }
             }
-        }
 
-        return $text;
+            return $text;
+        });
     }
 
     public function job()
