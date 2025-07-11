@@ -33,6 +33,11 @@ return new class extends Migration {
             'id' => 2,
             'name' => 'Fout',
         ]);
+
+        Jobstatus::firstOrCreate([
+            'id' => 3,
+            'name' => 'Issue aangemaakt',
+        ]);
     }
 
     /**

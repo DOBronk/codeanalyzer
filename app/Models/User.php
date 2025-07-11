@@ -45,11 +45,19 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    protected static function booted(): void
+    {
+        self::deleted(static function (User $user): void {
+            $user->settings()->delete();
+        });
+
+        self::created(static function (User $user): void {
+            Settings::Create(['user_id' => $user->id]);
+        });
+    }
 
     public function settings()
     {
-        Settings::firstOrCreate(['user_id' => $this->id]);
-        
         return $this->hasOne(Settings::class);
     }
 }

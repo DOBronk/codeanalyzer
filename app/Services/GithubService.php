@@ -11,10 +11,19 @@ use App\Exceptions\GithubExceptions\ResourceNotFoundException;
 
 class GithubService
 {
-    public function __construct(private readonly string $uri, private readonly string $key)
-    {
-    }
+    public function __construct(private readonly string $uri, private string $key) {}
 
+    private function handleStatus(int $status): \Exception
+    {
+        return match ($status) {
+            401 => new \Exception('Login failed, please check your API key settings'),
+            404 => new ResourceNotFoundException('Resource not found!'),
+            409 => new ConflictException('Conflict!'),
+            410 => new \Exception('Issues are disabled for this repository'),
+            422 => new ValidationException('Validation error!'),
+            default => new \Exception('Unkown status code')
+        };
+    }
     /**
      * Recursively retrieve all files ending with .php from provided git tree
      * @param string $owner Repository owner
@@ -22,27 +31,15 @@ class GithubService
      * @param string $sha Optional: SHA code for tree (defaults to main)
      * @return array|null Returns an associative array with SHA codes to all blobs or returns null on failure
      */
-    public function getPhpFilesFromTree(string $owner, string $repo, string $sha = "main", string $apikey): array|null
+    public function getPhpFilesFromTree(string $owner, string $repo, string $sha = "main"): array|null
     {
         $uri = "{$this->uri}/repos/{$owner}/{$repo}/git/trees/{$sha}";
-        $http = $this->httpClient($apikey)->get($uri, ['recursive' => 1]);
+        $http = Http::withToken($this->key)->get($uri, ['recursive' => 1]);
 
-        switch ($http->status()) {
-            case 200:
-                $response = $http->json()['tree'];
-                return array_filter($response, function ($item) {
-                    return $item['type'] === "blob" && str_ends_with($item['path'], '.php');
-                });
-            case 401:
-                    throw new \Exception('Login failed, please check your API key settings');
-            case 404:
-                throw new ResourceNotFoundException('Resource not found!');
-            case 409:
-                throw new ConflictException('Conflict!');
-            case 422:
-                throw new ValidationException('Validation error!');
-            default:
-                throw new \Exception('Unkown status code');
+        if ($http->status() !== 200) {
+            throw $this->handleStatus($http->status());
+        } else {
+            return array_filter($http->json()['tree'], fn($item) => $item['type'] === "blob" && str_ends_with($item['path'], '.php'));
         }
     }
     /**
@@ -52,17 +49,21 @@ class GithubService
      * @param string $sha SHA code for blob
      * @return string|null Return blob as string or null on failure
      */
-    public function getBlob(string $owner, string $repo, string $sha, string $apikey): string|null
+    public function getBlob(string $owner, string $repo, string $sha, string $api = ''): string|null
     {
+        if ($api != '') {
+            $this->key = $api;
+        }
+
         $uri = "{$this->uri}/repos/{$owner}/{$repo}/git/blobs/{$sha}";
-        $http = $this->httpClient($apikey)->get($uri);
+        $http =  Http::withToken($this->key)->get($uri);
         Log::info("Blob: {$sha} http: {$http}");
 
         $json = $http->json();
         if ($http->status() == 200 && array_key_exists('content', $json)) {
             return base64_decode($json['content']);
         } else {
-            return false;
+            throw $this->handleStatus($http->status());
         }
     }
     /**
@@ -73,35 +74,25 @@ class GithubService
      * @param string $body
      * @return bool
      */
-    public function createIssue(string $owner, string $repo, string $title, string $body, string $apikey): string
+    public function createIssue(string $owner, string $repo, string $title, string $body): string
     {
         $uri = "{$this->uri}/repos/{$owner}/{$repo}/issues";
-        $http = $this->httpClient($apikey)->post($uri, [
+        $http = Http::withToken($this->key)->post($uri, [
             'title' => $title,
             'body' => $body,
             'labels' => ['AI Generated Issue']
         ]);
-        switch ($http->status()) {
-            case 201:
-                $response = $http->json();
-                if(array_key_exists('html_url', $response)) {
-                    return $response['html_url'];
-                }else{
-                    return '';
-                }
-            case 401:
-                throw new \Exception('Login failed, please check your API key settings');
-            case 410:
-                throw new \Exception('Issues are disabled for this repository');
-            default:
-                throw new \Exception('Unknown status code: ' . $http->status());
+        if ($http->status() !== 201) {
+            throw $this->handleStatus($http->status());
+        } else {
+            $response = $http->json();
+            Log::info("Issue created");
+            if (array_key_exists('html_url', $response)) {
+                return $response['html_url'];
+            } else {
+                Log::info("No URL on issue created!", $response);
+                return '';
+            }
         }
-    }
-
-
-    private function httpClient(string $apikey): PendingRequest
-    {
-        return Http::withHeaders(["Authorization" => "Bearer " . $apikey]); 
-        //  return Http::withHeaders(["Authorization" => "Bearer {$this->key}"]);
     }
 }

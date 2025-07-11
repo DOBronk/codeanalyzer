@@ -10,70 +10,63 @@ use Illuminate\Support\Facades\Log;
 class Jobitems extends Model
 {
     protected $fillable = ['job_id', 'path', 'blob_sha', 'status_id', 'results'];
-    //  protected $casts = ['results' => 'array'];
     protected $table = 'codeanalyzer_job_items';
     protected $with = ['status'];
-
+    protected $casts = ['results' => 'array'];
     public function status()
     {
         return $this->belongsTo(Jobstatus::class);
     }
 
-    private function hasImprovements($arr, $val = null)
+    public function issues()
     {
-        return Cache::remember('results_' . $this->id, 180000, function () use ($arr) {
-            if ($arr == null) {
+        return $this->hasMany(Jobissues::class, "jobitem_id");
+    }
+    public function job()
+    {
+        return $this->belongsTo(Jobs::class);
+    }
+    protected function filteredResults(): Attribute
+    {
+        return Attribute::make(
+            get: fn(): array => $this->hasImprovements($this->results),
+        )->shouldCache();
+    }
+    private function hasImprovements($arr): array
+    {
+        return Cache::rememberForever('results_' . $this->id, function () use ($arr) {
+            if (empty($arr)) {
                 return [];
             }
 
             return array_filter($arr, function ($item) {
-                if (! is_array($item)) {
-                    return $item != 1;
-                } else {
+                if (is_array($item)) {
                     return true;
                 }
+
+                $uitem = strtoupper($item);
+                return ! ($uitem === '1' || $uitem === 'OK' || $uitem === 'NOT APPLICABLE');
             });
         });
     }
-    protected function results(): Attribute
+    private function walkResults(&$value, $key): void
     {
-        return Attribute::make(
-            get: fn(string $value): array => $this->hasImprovements(json_decode($value, true)),
-        )->shouldCache();
+        if (is_array($value)) {
+            array_walk($value, [$this, 'walkResults']);
+            $value = "{$key}: " . implode("\r\n", $value);
+        } else {
+            $value = "{$key}: {$value}";
+        }
     }
-
     public function resultsToString(): string
     {
-        return Cache::remember('results_string_' . $this->id, 180000, function () {
-            $text = "";
-            if ($this->results) {
-                foreach ($this->results as $name => $value) {
-                    if (! is_array($value)) {
-                        $text .= "{$name}: {$value}\r\n\r\n";
-                    } else {
-                        try {
-                            $text .= "{$name}:\r\n";
-
-                            foreach ($value as $key => $val) {
-                                if (is_array($val)) {
-                                    $text .= implode(':', $val);
-                                } else {
-                                    $text .= "{$key}: {$val}\r\n";
-                                }
-                            }
-                        } catch (\Exception $e) {
-                            dd($e->getMessage());
-                        }
-                    }
-                }
+        return Cache::rememberForever('results_string' . $this->id, function () {
+            if ($results = $this->filteredResults) {
+                array_walk($results, [$this, 'walkResults']);
+                return implode("\r\n", $results);
             }
 
-            return $text;
+            return '';
         });
-    }
-
-    public function job()
-    {
-        return $this->belongsTo(Jobs::class);
     }
 }

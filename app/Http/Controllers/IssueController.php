@@ -3,88 +3,60 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\Jobitems;
 use App\Models\Jobs;
 use App\Models\Jobissues;
 use App\Services\GithubService;
+
 class IssueController extends Controller
 {
-    public function index()
+    public function index(GithubService $git)
     {
-        $issues = Jobissues::query()->currentUser()->with('job')->get();
-
-        return view('issues.index', ['items' => $issues]);
+        return view('issues.index', ['items' => Jobissues::with('job')->orderByDesc('created_at')->currentUser()->paginate(10)]);
     }
 
-    public function show($id)
+    public function show(Jobissues $jobissues)
     {
-        $issue = Jobissues::find($id);
-
-        if(empty($issue)) {
-            abort(404);
-        }
-
-        return view('issues.show',['item' => $issue]);
+        return view('issues.show', ['item' => $jobissues, 'job' => $jobissues->job]);
     }
     /**
      * Show the form for creating a new resource.
      */
-    public function create($id)
+    public function create(Jobitems $jobitems)
     {
-        $item = Jobitems::find($id);
-
-        if(empty($item)) {
-            abort(404);
-        } elseif($item->status_id != 1) {
+        if ($jobitems->status_id != 1) {
             abort(500, 'Onjuiste issue status');
         }
-        return view('issues.create', ['item' => $item]);
+        return view('issues.create', ['item' => $jobitems]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store($id, Request $request, GithubService $git)
+    public function store(Jobitems $jobitems, Request $request, GithubService $git)
     {
-        $item = Jobitems::find($id);
+        extract($request->validate([
+            'issuetext' => 'required|string',
+            'title' => 'required|string|max:1024'
+        ]));
 
-        if(empty($item)) {
-            abort(404);
-        }
+        $job = Jobs::find($jobitems->job_id);
 
-        $data = $request->validate([ 'issuetext' => 'required|string',
-                                            'title' => 'required|string|max:1024' ]);
-        
-        $job = Jobs::find($item->job_id);
-        DB::beginTransaction();
-
-        try{
-            $issue = new Jobissues();
-            $issue->job_id = $job->id;
-            $issue->jobitem_id = $item->id;
-            $issue->user_id = $request->user()->id;
-            $issue->title = $data['title'];
-            $issue->text = $data['issuetext'];
-            $issue->save();
+        try {
+            Jobissues::create([
+                'job_id' => $job->id,
+                'jobitem_id' => $jobitems->id,
+                'user_id' => $request->user()->id,
+                'title' => $title,
+                'text' => $issuetext,
+                'git_url' => $git->createIssue($job->owner, $job->repo, $title, $issuetext),
+            ]);
         } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->withError("Kon issue record niet aanmaken!");
+            return back()->withError($e->getMessage());
         }
 
-        $item->status_id = 3;
-        $item->save();
+        $jobitems->update(['status_id' => 3]);
 
-        try{
-            $issue->git_url = $git->createIssue($job->owner,$job->repo,$data['title'],$data['issuetext'], apikey: $request->user()->settings->gh_api_key);
-            $issue->save();
-        }
-        catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->withError($e->getMessage());
-        }
-
-        DB::commit();
-        return redirect()->route('codeanalyzer.job', ['id' => $job])->with('message','Issue succesvol aangemaakt');
+        return redirect()->route('codeanalyzer.job', ['jobs' => $job])->with('message', 'Issue succesvol aangemaakt');
     }
 }

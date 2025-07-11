@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 
 use App\Services\GithubService;
 use App\Services\MessageBroker;
@@ -20,10 +21,7 @@ class SendBrokerQueueJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(private readonly Jobs $userjob)
-    {
-        //
-    }
+    public function __construct(private readonly Jobs $userjob) {}
 
     /**
      * Execute the job.
@@ -32,12 +30,14 @@ class SendBrokerQueueJob implements ShouldQueue
     {
         try {
             foreach ($this->userjob->items as $item) {
-                $code = $git->getBlob($this->userjob->owner, $this->userjob->repo, $item->blob_sha, User::find($this->userjob->user_id)->settings->gh_api_key);
+                $api = User::find($this->userjob->user_id)->settings->gh_api_key;
+                $code = $git->getBlob($this->userjob->owner, $this->userjob->repo, $item->blob_sha, $api);
+                Log::info("Code: " . $code);
                 $task = new JobDTO($this->userjob->id, $this->userjob->user_id, $item->id, $code);
+                Log::info("Task: " . $task->toJson());
                 $broker->addJob($task->toJson());
             }
-        } catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             BrokerQueueError::dispatch($this->userjob, $e->getMessage(), User::find($this->userjob->user_id));
         }
     }

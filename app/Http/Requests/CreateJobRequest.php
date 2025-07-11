@@ -11,7 +11,7 @@ class CreateJobRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('noActiveJobs');
+        return true;
     }
 
     /**
@@ -23,7 +23,7 @@ class CreateJobRequest extends FormRequest
     {
         return [
             'owner' => 'required|string|max:255',
-            'repository' => 'required|string|max:255',
+            'repo' => 'required|string|max:255',
             'branch' => 'nullable|string|max:255',
         ];
     }

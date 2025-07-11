@@ -1,52 +1,50 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\CodeAnalyzerController;
+use App\Http\Controllers\JobStep1Controller;
+use App\Http\Controllers\JobStep2Controller;
+
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\SettingsController;
 use App\Models\Jobs;
+use App\Models\Jobissues;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
 
-Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::middleware('can:noActiveJobs,App\Models\Jobs')->group(function (): void {
+    Route::middleware(['can:noActiveJobs,App\Models\Jobs', 'can:hasAPI,App\Models\User'])->group(function (): void {
         // Create job step 1
-        Route::get('/create-1', [CodeAnalyzerController::class, 'createStepOne'])->name('codeanalyzer.create.step.one');
-        Route::post('/create-1', [CodeAnalyzerController::class, 'postCreateStepOne'])->name('codeanalyzer.create.step.one.post');
+        Route::get('/create-1', fn() => view('jobs.createjob1'))->name('codeanalyzer.create.step.one');
+        Route::post('/create-1', JobStep1Controller::class)->name('codeanalyzer.create.step.one.post');
         // Create job step 2
-        Route::get('/create-2', [CodeAnalyzerController::class, 'createStepTwo'])->name('codeanalyzer.create.step.two');
-        Route::post('/create-2', [CodeAnalyzerController::class, 'postCreateStepTwo'])->name('codeanalyzer.create.step.two.post');
+        Route::post('/create-2', JobStep2Controller::class)->name('codeanalyzer.create.step.two.post');
     });
-
     // Job's items/details overview
-    Route::get(
-        '/job/{jobs}',
-        function (Jobs $jobs) {
-            return view('jobs.jobdetails', ['job' => $jobs]);
-        }
-    )->name('codeanalyzer.job');
-
-    Route::get('/', function () {
-        return view('jobs.index', ['items' => Jobs::query()->currentUser()->with('items')->get()]);
-    })->name('codeanalyzer.index');
+    Route::get('/job/{jobs}', fn(Jobs $jobs) => view('jobs.jobdetails', ['job' => $jobs]))
+        ->middleware('can:view,jobs')
+        ->name('codeanalyzer.job');
+    Route::get('/', fn() => view('jobs.index', ['items' => Jobs::with('items')->orderByDesc('created_at')->currentUser()->paginate(10)]))->name('codeanalyzer.index');
 
     // Create issue
-    Route::get('/issues/create/{id}', [IssueController::class, 'create'])->name('codeanalyzer.createissue');
-    Route::post('/issues/create/{id}', [IssueController::class, 'store'])->name('codeanalyzer.storeissue');
+    Route::middleware(['can:create,jobitems', 'can:hasAPI,App\Models\User'])->group(function (): void {
+        Route::get('/issues/create/{jobitems}', [IssueController::class, 'create'])->name('codeanalyzer.createissue');
+        Route::post('/issues/create/{jobitems}', [IssueController::class, 'store'])->name('codeanalyzer.storeissue');
+    });
 
     route::get('/issues', [IssueController::class, 'index'])->name('codeanalyzer.issues');
-    route::get('/issues/{id}', [IssueController::class, 'show'])->name('codeanalyzer.showissue');
+    route::get('/issues/{jobissues}', [IssueController::class, 'show'])
+        ->middleware('can:view,jobissues')
+        ->name('codeanalyzer.showissue');
 
     route::get('/settings', [SettingsController::class, 'index'])->name('codeanalyzer.settings');
     route::post('/settings', [SettingsController::class, 'store'])->name('codeanalyzer.settings');
 });
-
 
 require __DIR__ . '/auth.php';
