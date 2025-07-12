@@ -42,9 +42,8 @@
             @can('noActiveJobs', 'App\\Models\Jobs')
                 <p class="mb-2 text-green-700 font-semibold">Er zijn geen actieve jobs, u kunt een nieuwe job
                     toevoegen</p>
-                <a href="{{ route('codeanalyzer.create.step.one') }}"
-                    class="inline-block bg-blue-600 text-white px-4 py-2 rounded-sm hover:bg-blue-700 transition">Nieuwe
-                    job aanmaken</a>
+                <x-button-blue href="{{ route('codeanalyzer.create.step.one') }}" type="link">Nieuwe job
+                    aanmaken</x-button-blue>
             @else
                 <p class="mb-2 text-red-600 font-semibold">Er staat nog een job in de wacht, u kunt geen nieuwe
                     jobs aanmaken</p>

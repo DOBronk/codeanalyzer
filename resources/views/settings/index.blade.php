@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <x-page-container>
+    <x-page-container class="max-w-lg">
         <x-message :message="Session('error')" error="1" />
         <x-message :message="Session('message')" />
 
