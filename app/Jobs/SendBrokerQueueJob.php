@@ -31,8 +31,7 @@ class SendBrokerQueueJob implements ShouldQueue
         try {
             foreach ($this->userjob->items as $item) {
                 $api = User::find($this->userjob->user_id)->settings->gh_api_key;
-                $code = $git->getBlob($this->userjob->owner, $this->userjob->repo, $item->blob_sha, $api);
-                Log::info("Code: " . $code);
+                $code = $git->getBlob($this->userjob->owner, $this->userjob->repository, $item->sha, $api);
                 $task = new JobDTO($this->userjob->id, $this->userjob->user_id, $item->id, $code);
                 Log::info("Task: " . $task->toJson());
                 $broker->addJob($task->toJson());

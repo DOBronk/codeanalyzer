@@ -28,7 +28,7 @@
                             </div>
                             <div>
                                 <label for="repository" class="block mb-1 font-semibold">Repository</label>
-                                <input type="text" id="repo" name="repo" value="{{ old('repo') }}"
+                                <input type="text" id="repo" name="repository" value="{{ old('repository') }}"
                                     class="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-hidden focus:ring-2 focus:ring-blue-500" />
                                 <x-input-error :messages="$errors->get('repository')" class="mt-2" />
                             </div>

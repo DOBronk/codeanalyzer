@@ -21,10 +21,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware(['can:noActiveJobs,App\Models\Jobs', 'can:hasAPI,App\Models\User'])->group(function (): void {
         // Create job step 1
-        Route::get('/create-1', fn() => view('jobs.createjob1'))->name('codeanalyzer.create.step.one');
-        Route::post('/create-1', JobStep1Controller::class)->name('codeanalyzer.create.step.one.post');
+        Route::get('/create-1', [JobStep1Controller::class, 'index'])->name('codeanalyzer.create.step.one');
+        Route::post('/create-1', [JobStep1Controller::class, 'create'])->name('codeanalyzer.create.step.one.post');
         // Create job step 2
-        Route::post('/create-2', JobStep2Controller::class)->name('codeanalyzer.create.step.two.post');
+        Route::get('/create-2', [JobStep2Controller::class, 'index'])->name('codeanalyzer.create.step.two');
+        Route::post('/create-2', [JobStep2Controller::class, 'store'])->name('codeanalyzer.create.step.two.post');
     });
     // Job's items/details overview
     Route::get('/job/{jobs}', fn(Jobs $jobs) => view('jobs.jobdetails', ['job' => $jobs]))
@@ -44,7 +45,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('codeanalyzer.showissue');
 
     route::get('/settings', [SettingsController::class, 'index'])->name('codeanalyzer.settings');
-    route::post('/settings', [SettingsController::class, 'store'])->name('codeanalyzer.settings');
+    route::post('/settings', [SettingsController::class, 'store'])->name('codeanalyzer.postsettings');
 });
 
 require __DIR__ . '/auth.php';

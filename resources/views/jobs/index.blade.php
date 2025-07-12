@@ -30,7 +30,7 @@
                                             <tr class="border-b border-gray-200 hover:bg-gray-50">
                                                 <td class="py-2 px-4">{{ $item->id }}</td>
                                                 <td class="py-2 px-4">{{ $item->owner }}</td>
-                                                <td class="py-2 px-4">{{ $item->repo }}</td>
+                                                <td class="py-2 px-4">{{ $item->repository }}</td>
                                                 <td class="py-2 px-4">{{ $item->branch }}</td>
                                                 <td class="py-2 px-4">{{ count($item->items) }}</td>
                                                 <td class="py-2 px-4">{{ $item->active }}</td>

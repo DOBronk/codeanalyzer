@@ -30,7 +30,7 @@
                                     <tr class="border-b border-gray-200">
                                         <td class="py-2 px-4">{{ $job->id }}</td>
                                         <td class="py-2 px-4">{{ $job->owner }}</td>
-                                        <td class="py-2 px-4">{{ $job->repo }}</td>
+                                        <td class="py-2 px-4">{{ $job->repository }}</td>
                                         <td class="py-2 px-4">{{ $job->branch }}</td>
                                         <td class="py-2 px-4">{{ $job->active }}</td>
                                     </tr>

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Jobs extends Model
 {
     use UserScope;
-    protected $fillable = ['user_id', 'owner', 'repo', 'active', 'branch'];
+    protected $fillable = ['user_id', 'owner', 'repository', 'active', 'branch'];
     protected $table = 'codeanalyzer_jobs';
 
     public function items()

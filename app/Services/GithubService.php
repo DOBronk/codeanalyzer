@@ -31,7 +31,7 @@ class GithubService
      * @param string $sha Optional: SHA code for tree (defaults to main)
      * @return array|null Returns an associative array with SHA codes to all blobs or returns null on failure
      */
-    public function getPhpFilesFromTree(string $owner, string $repo, string $sha = "main"): array|null
+    public function getPhpFilesFromTree(string $owner, string $repo, string $sha): array|null
     {
         $uri = "{$this->uri}/repos/{$owner}/{$repo}/git/trees/{$sha}";
         $http = Http::withToken($this->key)->get($uri, ['recursive' => 1]);
@@ -49,13 +49,13 @@ class GithubService
      * @param string $sha SHA code for blob
      * @return string|null Return blob as string or null on failure
      */
-    public function getBlob(string $owner, string $repo, string $sha, string $api = ''): string|null
+    public function getBlob(string $owner, string $repository, string $sha, string $api = ''): string|null
     {
         if ($api != '') {
             $this->key = $api;
         }
 
-        $uri = "{$this->uri}/repos/{$owner}/{$repo}/git/blobs/{$sha}";
+        $uri = "{$this->uri}/repos/{$owner}/{$repository}/git/blobs/{$sha}";
         $http =  Http::withToken($this->key)->get($uri);
         Log::info("Blob: {$sha} http: {$http}");
 
@@ -69,14 +69,14 @@ class GithubService
     /**
      * Summary of createIssue
      * @param string $owner
-     * @param string $repo
+     * @param string $repository
      * @param string $title
      * @param string $body
      * @return bool
      */
-    public function createIssue(string $owner, string $repo, string $title, string $body): string
+    public function createIssue(string $owner, string $repository, string $title, string $body): string
     {
-        $uri = "{$this->uri}/repos/{$owner}/{$repo}/issues";
+        $uri = "{$this->uri}/repos/{$owner}/{$repository}/issues";
         $http = Http::withToken($this->key)->post($uri, [
             'title' => $title,
             'body' => $body,

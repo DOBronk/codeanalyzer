@@ -15,8 +15,8 @@
                             <p class="mb-4 text-red-600 font-semibold">{{ session('message') }}</p>
                         @endif
 
-                        <form action="{{ route('codeanalyzer.settings') }}" method="POST" enctype="multipart/form-data"
-                            class="space-y-6">
+                        <form action="{{ route('codeanalyzer.postsettings') }}" method="POST"
+                            enctype="multipart/form-data" class="space-y-6">
                             @csrf
                             <div>
                                 <x-input-error :messages="$errors->get('gh_api_key')" class="mt-2" />

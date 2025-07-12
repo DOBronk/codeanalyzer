@@ -8,7 +8,7 @@ class TreeBuilder
     {
         $tree = [];
 
-        foreach ($files as $file) {
+        foreach ($files as $key => $file) {
             $parts = explode('/', $file['path']);
             $current = &$tree;
 
@@ -18,8 +18,7 @@ class TreeBuilder
                 }
                 $current = &$current[$part];
             }
-            $current['?'] = $file['sha'];
-            $current['*'] = $file['path'];
+            $current = $key;
         }
 
         return $tree;

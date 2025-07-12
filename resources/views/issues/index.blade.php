@@ -31,7 +31,7 @@
                                             <tr class="border-b border-gray-200 hover:bg-gray-50">
                                                 <td class="py-2 px-4">{{ $item->id }}</td>
                                                 <td class="py-2 px-4">{{ $item->job->owner }}</td>
-                                                <td class="py-2 px-4">{{ $item->job->repo }}</td>
+                                                <td class="py-2 px-4">{{ $item->job->repository }}</td>
                                                 <td class="py-2 px-4">{{ $item->job->branch }}</td>
                                                 <td class="py-2 px-4">{{ $item->title }}</td>
                                                 <td class="py-2 px-4">{{ Str::limit($item->text, 50) }}</td>

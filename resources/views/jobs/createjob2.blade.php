@@ -17,10 +17,8 @@
                         <form action="{{ route('codeanalyzer.create.step.two.post') }}" method="POST"
                             enctype="multipart/form-data">
                             @csrf
-                            <input type="hidden" value="{{ $repo }}" name="repo" />
-                            <input type="hidden" value="{{ $owner }}" name="owner" />
-                            <input type="hidden" value="{{ $branch }}" name="branch" /><br>
-                            <x-rendertree :tree="$items" namecheckbox="selectedItems[]" /><br>
+                            <x-input-error :messages="$errors->get('selectedItems')" class="mt-2" />
+                            <x-rendertree2 :tree="$items" namecheckbox="selectedItems[]" /><br>
                             <button type="submit"
                                 class="bg-blue-600 text-white px-4 py-2 rounded-sm hover:bg-blue-700 transition">Job
                                 aanmaken</button>

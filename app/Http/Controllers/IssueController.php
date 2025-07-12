@@ -49,7 +49,7 @@ class IssueController extends Controller
                 'user_id' => $request->user()->id,
                 'title' => $title,
                 'text' => $issuetext,
-                'git_url' => $git->createIssue($job->owner, $job->repo, $title, $issuetext),
+                'git_url' => $git->createIssue($job->owner, $job->repository, $title, $issuetext),
             ]);
         } catch (\Exception $e) {
             return back()->withError($e->getMessage());

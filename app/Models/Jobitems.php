@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class Jobitems extends Model
 {
-    protected $fillable = ['job_id', 'path', 'blob_sha', 'status_id', 'results'];
+    protected $fillable = ['job_id', 'path', 'sha', 'status_id', 'results'];
     protected $table = 'codeanalyzer_job_items';
     protected $with = ['status'];
     protected $casts = ['results' => 'array'];
