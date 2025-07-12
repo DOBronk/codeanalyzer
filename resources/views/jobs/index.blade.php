@@ -20,12 +20,14 @@
                 ]">
                     @foreach ($items as $item)
                         <x-row-table class="hover:bg-gray-50">
-                            <x-column-table>{{ $item->id }}</x-column-table>
-                            <x-column-table>{{ $item->owner }}</x-column-table>
-                            <x-column-table>{{ $item->repository }}</x-column-table>
-                            <x-column-table>{{ $item->branch }}</x-column-table>
-                            <x-column-table>{{ count($item->items) }}</x-column-table>
-                            <x-column-table>{{ $item->active }}</x-column-table>
+                            <x-column-table :multi="[
+                                $item->id,
+                                $item->owner,
+                                $item->repository,
+                                $item->branch,
+                                count($item->items),
+                                $item->active,
+                            ]" />
                             <x-column-table>
                                 <x-link href="{{ route('codeanalyzer.job', ['jobs' => $item]) }}">Toon details</x-link>
                             </x-column-table>
@@ -38,19 +40,17 @@
             <p class="mb-4 text-gray-600">Nog geen jobs aangemaakt</p>
         @endif
 
-        @can('hasAPI')
-            @can('noActiveJobs', 'App\\Models\Jobs')
-                <p class="mb-2 text-green-700 font-semibold">Er zijn geen actieve jobs, u kunt een nieuwe job
-                    toevoegen</p>
-                <x-button-blue href="{{ route('codeanalyzer.create.step.one') }}" type="link">Nieuwe job
-                    aanmaken</x-button-blue>
-            @else
-                <p class="mb-2 text-red-600 font-semibold">Er staat nog een job in de wacht, u kunt geen nieuwe
-                    jobs aanmaken</p>
-            @endcan
-        @else
+        @cannot('hasAPI')
             <p class="mb-2 text-red-600 font-semibold">Er is nog geen github API key ingesteld. Jobs
                 aanmaken is niet mogelijk</p>
+        @elsecannot('noActiveJobs', 'App\\Models\Jobs')
+            <p class="mb-2 text-red-600 font-semibold">Er staat nog een job in de wacht, u kunt geen nieuwe
+                jobs aanmaken</p>
+        @else
+            <p class="mb-2 text-green-700 font-semibold">Er zijn geen actieve jobs, u kunt een nieuwe job
+                toevoegen</p>
+            <x-button-blue href="{{ route('codeanalyzer.create.step.one') }}" type="link">Nieuwe job
+                aanmaken</x-button-blue>
         @endcan
     </x-page-container>
 

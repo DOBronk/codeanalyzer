@@ -20,12 +20,14 @@
                 ]">
                     @foreach ($items as $item)
                         <x-row-table class="hover:bg-gray-50">
-                            <x-column-table>{{ $item->id }}</x-column-table>
-                            <x-column-table>{{ $item->job->owner }}</x-column-table>
-                            <x-column-table>{{ $item->job->repository }}</x-column-table>
-                            <x-column-table>{{ $item->job->branch }}</x-column-table>
-                            <x-column-table>{{ $item->title }}</x-column-table>
-                            <x-column-table>{{ Str::limit($item->text, 50) }}</x-column-table>
+                            <x-column-table :multi="[
+                                $item->id,
+                                $item->job->owner,
+                                $item->job->repository,
+                                $item->job->branch,
+                                $item->title,
+                                Str::limit($item->text, 50),
+                            ]" />
                             <x-column-table>
                                 <x-link href="{{ route('codeanalyzer.showissue', ['jobissues' => $item]) }}">Toon
                                     issue</x-link><br>

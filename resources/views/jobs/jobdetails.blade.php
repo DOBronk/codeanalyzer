@@ -12,11 +12,7 @@
         <div class="overflow-x-auto mb-6">
             <x-data-table :headers="[__('Id'), __('Eigenaar'), __('Repository'), __('Branch'), __('Status')]">
                 <x-row-table>
-                    <x-column-table>{{ $job->id }}</x-column-table>
-                    <x-column-table>{{ $job->owner }}</x-column-table>
-                    <x-column-table>{{ $job->repository }}</x-column-table>
-                    <x-column-table>{{ $job->branch }}</x-column-table>
-                    <x-column-table>{{ $job->active }}</x-column-table>
+                    <x-column-table :multi="[$job->id, $job->owner, $job->repository, $job->branch, $job->active]" />
                 </x-row-table>
             </x-data-table>
         </div>
@@ -30,7 +26,7 @@
                         <x-column-table>{{ $item->status->name }}</x-column-table>
                         <x-column-table>
                             @if ($item->filteredResults)
-                                <x-text rows='4'>{{ $item->resultsToString() }}</x-text>
+                                <x-text>{{ $item->resultsToString() }}</x-text>
                             @elseif ($item->status_id != 0)
                                 Geen aanmerkingen
                             @endif

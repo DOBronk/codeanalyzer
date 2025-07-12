@@ -8,9 +8,7 @@
     <x-page-container>
         <x-data-table :headers="[__('Eigenaar'), __('Repository'), __('Branch')]">
             <x-row-table>
-                <x-column-table>{{ $job->owner }}</x-column-table>
-                <x-column-table>{{ $job->repository }}</x-column-table>
-                <x-column-table>{{ $job->branch }}</x-column-table>
+                <x-column-table :multi="[$job->owner, $job->repository, $job->branch]" />
             </x-row-table>
         </x-data-table>
 
