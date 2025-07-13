@@ -4,14 +4,16 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateJobRequest extends FormRequest
+class JobStep1Request extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Set the default value of branch if empty, also add/overwrite the user ID
+     *
+     * @return array
      */
-    public function authorize(): bool
+    public function validationData(): array
     {
-        return true;
+        return array_merge($this->all(), ['branch' => $this['branch'] ?? 'main', 'user_id' => $this->user()->id]);
     }
 
     /**
@@ -23,8 +25,9 @@ class CreateJobRequest extends FormRequest
     {
         return [
             'owner' => 'required|string|max:255',
-            'repo' => 'required|string|max:255',
+            'repository' => 'required|string|max:255',
             'branch' => 'nullable|string|max:255',
+            'user_id' => '',
         ];
     }
 }
