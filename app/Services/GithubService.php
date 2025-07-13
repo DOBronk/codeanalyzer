@@ -2,17 +2,23 @@
 
 namespace App\Services;
 
-use Illuminate\Http\Client\PendingRequest;
+use App\Models\Jobs;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Exceptions\GithubExceptions\ConflictException;
 use App\Exceptions\GithubExceptions\ValidationException;
 use App\Exceptions\GithubExceptions\ResourceNotFoundException;
 
+use function PHPUnit\Framework\isArray;
+
 class GithubService
 {
     public function __construct(private readonly string $uri, private string $key) {}
 
+    /**
+     * Function to return an exception based on a HTTP status code
+     * @param int $status HTTP Status Code
+     */
     private function handleStatus(int $status): \Exception
     {
         return match ($status) {
@@ -26,22 +32,31 @@ class GithubService
     }
     /**
      * Recursively retrieve all files ending with .php from provided git tree
-     * @param string $owner Repository owner
-     * @param string $repo Repository
-     * @param string $sha Optional: SHA code for tree (defaults to main)
-     * @return array|null Returns an associative array with SHA codes to all blobs or returns null on failure
+     * @param array|string Owner of repository or can be an associative array with all values
+     * @param string $repository Repository name
+     * @param string $sha Branch name or SHA for branch
+     * @return array Returns an array with filepath as key and corresponding SHA
      */
-    public function getPhpFilesFromTree(string $owner, string $repo, string $sha): array|null
+    public function getPhpFilesFromTree(array|string $value, ?string $repository = null, ?string $branch = 'main'): array
     {
-        $uri = "{$this->uri}/repos/{$owner}/{$repo}/git/trees/{$sha}";
+        if (!is_array($value)) {
+            $owner = $value;
+        } elseif (count(array_intersect(array_keys($value), ['owner', 'repository', 'branch'])) === 3) {
+            [$owner, $repository,  $branch] = [$value['owner'], $value['repository'], $value['branch']];
+        } else {
+            throw new \Exception('Invalid value passed to function');
+        }
+
+        $uri = "{$this->uri}/repos/{$owner}/{$repository}/git/trees/{$branch}";
         $http = Http::withToken($this->key)->get($uri, ['recursive' => 1]);
 
         if ($http->status() !== 200) {
             throw $this->handleStatus($http->status());
-        } else {
-            return array_filter($http->json()['tree'], fn($item) => $item['type'] === "blob" && str_ends_with($item['path'], '.php'));
         }
+
+        return array_filter($http->json()['tree'], fn($item) => $item['type'] === "blob" && str_ends_with($item['path'], '.php'));
     }
+
     /**
      * Retrieve blob as a string from git repository
      * @param string $owner Repository owner
@@ -82,6 +97,8 @@ class GithubService
             'body' => $body,
             'labels' => ['AI Generated Issue']
         ]);
+        dump($http);
+        dd($http->status());
         if ($http->status() !== 201) {
             throw $this->handleStatus($http->status());
         } else {
