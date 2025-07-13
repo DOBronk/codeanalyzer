@@ -3,35 +3,36 @@
 namespace App\Http\Controllers;
 
 use App\Services\GithubService;
-use App\Utilities\TreeBuilder;
-use App\Http\Requests\CreateJobRequest;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use App\Http\Requests\JobStep1Request;
 
 class JobStep1Controller extends Controller
 {
-    public function index()
+    /**
+     * First step for job creation
+     * @return \Illuminate\Contracts\View\View
+     */
+    public function index(): \Illuminate\Contracts\View\View
     {
         return view('jobs.createjob1');
     }
-    public function create(Request $request, GitHubService $git)
-    {
-        $validated = $request->validate([
-            'owner' => 'required|string|max:255',
-            'repository' => 'required|string|max:255',
-            'branch' => 'nullable|string|max:255',
-        ]);
 
-        $validated['branch'] ??= 'main';
+    /**
+     * Try to retrieve the repository from GitHub
+     */
+    public function create(JobStep1Request $request, GitHubService $git)
+    {
+        session(['job_repository' => $request->validated()]);
 
         try {
-            $items = $git->getPhpFilesFromTree($validated['owner'],  $validated['repository'],  $validated['branch']);
+            $items = $git->getPhpFilesFromTree(session('job_repository'));
         } catch (\Exception $e) {
+            Log::error("Error getting response from repository from API {$e->getMessage()}", $request->toArray());
             return back()->withError($e->getMessage())->withInput();
         }
 
-        $request->session()->put('job_repository', $validated);
-        $request->session()->put('job_items', $items);
-        
+        session(['job_items' => $items]);
+
         return redirect()->route('codeanalyzer.create.step.two');
     }
 }

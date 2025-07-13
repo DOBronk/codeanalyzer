@@ -2,49 +2,63 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CreateJobRequest;
 use App\Jobs\SendBrokerQueueJob;
 use Illuminate\Support\Facades\DB;
 use App\Models\Jobs;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreJobRequest;
 use App\Utilities\TreeBuilder;
+use Illuminate\Http\RedirectResponse;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class JobStep2Controller extends Controller
 {
-    private function checkSession(Request $request): void
+    /**
+     * Check to see if the required session variables are set
+     */
+    private function checkSession(): void
     {
-        if (!$request->session()->has('job_items') || !$request->session()->has('job_repository')) {
+        if (!session()->has(['job_items', 'job_repository'])) {
             abort(422, 'Session variables missing');
         }
     }
-    public function index(Request $request)
+
+    /**
+     * Build a multi-dimensional array for rendering the tree and pass to the view
+     */
+    public function index(): \Illuminate\Contracts\View\View
     {
-        $this->checkSession($request);
-        $items = TreeBuilder::buildTree($request->session()->get('job_items'));
+        $this->checkSession();
+
+        $items = TreeBuilder::buildTree(session('job_items'));
 
         return view('jobs.createjob2',  compact('items'));
     }
 
-    public function store(Request $request)
+    /**
+     * Store a new job in the database with the selected files, dispatch a job to
+     * fetch all the file contents from github and send to each the message broker
+     */
+    public function store(StoreJobRequest $request): RedirectResponse
     {
-        $request->validate(['selectedItems' => ['required', 'array', 'min:1']]);
-        $this->checkSession($request);
+        $this->checkSession();
+
+        DB::beginTransaction();
 
         try {
-            DB::transaction(function () use ($request) {
-                $job = Jobs::create([
-                    'user_id' => $request->user()->id,
-                    ...$request->session()->get("job_repository")
-                ]);
-                $jobitems = $request->session()->get("job_items");
-                $job->items()->createMany(array_map(fn($item) => $jobitems[$item], $request->selectedItems));
-                SendBrokerQueueJob::dispatch($job);
-                $request->session()->forget(['job_items', 'job_repository']);
-            });
+            $job = Jobs::create(session("job_repository"))
+                ->items()
+                ->createMany(array_intersect_key(session("job_items"), array_flip($request->selectedItems)));
         } catch (Exception $e) {
+            DB::rollBack();
+            Log::error("Error: {$e->getMessage()}", ['session' => $request]);
             return back()->withError("Kon job niet aanmaken!");
         }
+
+        DB::commit();
+        SendBrokerQueueJob::dispatch($job);
+
+        session()->forget(['job_items', 'job_repository']);
 
         return redirect()->route("codeanalyzer.index");
     }
