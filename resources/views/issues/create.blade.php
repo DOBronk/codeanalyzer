@@ -14,10 +14,11 @@
             <p class="mb-2 font-semibold">Bestand: {{ $item->path }}</p>
             <x-input-error :messages="$errors->get('title')" class="mt-2" />
             <p class="mb-2 font-semibold">Titel:</p>
-            <x-text-input class="block mt-1 w-full border border-gray-300" name="title" />
-            <x-input-error :messages="$errors->get('issuetext')" class="mt-2" />
+            <x-text-input class="block mt-1 w-full border border-gray-300" type="text" id="title"
+                name="title" />
+            <x-input-error :messages="$errors->get('text')" class="mt-2" />
             <p class="mb-2 font-semibold">Text:</p>
-            <x-text rows="10" name="issuetext">{{ $item->resultsToString() }}</x-text>
+            <x-text rows="10" name="text">{{ $item->resultsToString() }}</x-text>
             <x-button-blue>Aanmaken</x-button-blue>
         </form>
     </x-page-container>
