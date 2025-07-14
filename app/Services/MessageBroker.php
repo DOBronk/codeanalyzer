@@ -10,7 +10,12 @@ abstract class MessageBroker
         protected string $username,
         protected string $password,
         protected string $queue = "jobs"
-    ) {
-    }
+    ) {}
     abstract public function addJob(string $message);
+    public function addJobs(array $tasks)
+    {
+        foreach ($tasks as $task) {
+            $this->addJob($task);
+        }
+    }
 }

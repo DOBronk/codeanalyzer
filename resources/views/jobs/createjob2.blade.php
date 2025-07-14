@@ -1,17 +1,20 @@
-@extends('layouts.master')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Job aanmaken') }}
+        </h2>
+    </x-slot>
 
-@section('page', 'Code analyse')
+    <x-page-container class="max-w-lg">
+        <x-message :message="Session('error')" error="1" />
 
-@section('content')
-<h1>Code analyse nieuwe job aanmaken</h1>
-<p>{{ __('Selecteer bestanden voor analyse') }}</p>
-    <form action="{{ route('codeanalyzer.create.step.two.post') }}" method="POST"
-                        enctype="multipart/form-data">
-        @csrf
-        <input type="hidden" value="{{ $repository }}" name="repository" />
-        <input type="hidden" value="{{ $owner }}" name="owner" />
-        <input type="hidden" value="{{ $branch }}" name="branch" />
-        <x-rendertree :tree="$items" namecheckbox="selectedItems[]" />
-        <x-primary-button>Job aanmaken</x-primary-button>
-    </form>
-@endsection
+        <p>{{ __('Selecteer bestanden voor analyse') }}</p>
+        <form action="{{ route('codeanalyzer.create.step.two.post') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <x-input-error :messages="$errors->get('selectedItems')" class="mt-2" />
+            <x-rendertree2 :tree="$items" namecheckbox="selectedItems[]" /><br>
+            <x-button-blue>Job aanmaken</x-button-blue>
+        </form>
+    </x-page-container>
+
+</x-app-layout>

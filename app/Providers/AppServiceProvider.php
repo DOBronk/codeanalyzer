@@ -3,22 +3,33 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Policies\CreateJobPolicy;
+use App\Policies\JobsPolicy;
 use Illuminate\Support\Facades\Gate;
+use App\Models\Jobs;
+use App\Models\User;
 use App\Services\GithubService;
 use App\Services\RabbitMqBroker;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\Access\Response;
 
 class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
      */
+
     public function register(): void
     {
-        Gate::define('noActiveJobs', [CreateJobPolicy::class, 'noActiveJobs']);
+        Gate::define('hasAPI', function (User $user) {
+            return $user->settings->gh_api_key != null;
+        });
 
         $this->app->bind("App\Services\GithubService", function () {
-            return new GithubService(config('codeanalyzer.gh_uri'), config('codeanalyzer.gh_key'));
+            if (Auth::check()) {
+                $key = Auth::user()->settings->gh_api_key;
+            }
+
+            return new GithubService(config('codeanalyzer.gh_uri'), $key ?? '');
         });
 
         $this->app->bind("App\Services\MessageBroker", function () {

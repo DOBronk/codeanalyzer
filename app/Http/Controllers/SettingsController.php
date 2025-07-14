@@ -13,14 +13,14 @@ class SettingsController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate(['apikey' => 'string|max:255']);
+        $data = $request->validate(['gh_api_key' => 'string|max:255']);
 
         try {
-            $request->user()->settings()->update(['gh_api_key' => $data['apikey']]);
+            $request->user()->settings()->update($data);
         } catch (\Exception $e) {
-            return redirect()->back()->withError('Kon API key niet opslaan');
+            return back()->withError('Kon API key niet opslaan')->withInput();
         }
 
-        return redirect()->route('codeanalyzer.settings')->with('message','Instellingen opgeslagen!');
+        return redirect()->route('codeanalyzer.settings')->with('message', 'Instellingen opgeslagen!');
     }
 }
