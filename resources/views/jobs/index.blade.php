@@ -30,6 +30,10 @@
                             ]" />
                             <x-column-table>
                                 <x-link href="{{ route('codeanalyzer.job', ['jobs' => $item]) }}">Toon details</x-link>
+                                @if ($item->active)
+                                    <x-link href="{{ route('job.cancel', ['jobs' => $item]) }}"
+                                        onclick="return confirm('Zeker weten?');">Annuleren</x-link>
+                                @endif
                             </x-column-table>
                         </x-row-table>
                     @endforeach
