@@ -3,7 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\JobStep1Controller;
 use App\Http\Controllers\JobStep2Controller;
-
+use App\Http\Controllers\CancleJobController;
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\SettingsController;
 use App\Models\Jobs;
@@ -27,6 +27,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/create-2', [JobStep2Controller::class, 'index'])->name('codeanalyzer.create.step.two');
         Route::post('/create-2', [JobStep2Controller::class, 'store'])->name('codeanalyzer.create.step.two.post');
     });
+
+    Route::get("/job/cancel/{jobs}", [CancleJobController::class, 'index'])->name('job.cancel');
+
     // Job's items/details overview
     Route::get('/job/{jobs}', fn(Jobs $jobs) => view('jobs.jobdetails', ['job' => $jobs]))
         ->middleware('can:view,jobs')
