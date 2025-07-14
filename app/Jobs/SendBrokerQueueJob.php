@@ -21,7 +21,7 @@ class SendBrokerQueueJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(private readonly Jobs $userjob) {}
+    public function __construct(private readonly Jobs $userjob, private readonly string $api) {}
 
     /**
      * Execute the job.
@@ -29,15 +29,17 @@ class SendBrokerQueueJob implements ShouldQueue
     public function handle(GithubService $git, MessageBroker $broker): void
     {
         try {
-            foreach ($this->userjob->items as $item) {
-                $api = User::find($this->userjob->user_id)->settings->gh_api_key;
-                $code = $git->getBlob($this->userjob->owner, $this->userjob->repository, $item->sha, $api);
-                $task = new JobDTO($this->userjob->id, $this->userjob->user_id, $item->id, $code);
-                Log::info("Task: " . $task->toJson());
-                $broker->addJob($task->toJson());
-            }
+            $tasks = [];
+            $job = $this->userjob;
+
+            $job->items()->each(function ($item) use ($git, &$tasks, $job) {
+                $code = $git->getBlob($job->owner, $job->repository, $item->sha, $this->api);
+                $tasks[] = JobDTO::make($job->id, $job->user_id, $item->id, $code)->toJson();
+            }, 100);
+
+            $broker->addJobs($tasks);
         } catch (\Exception $e) {
-            BrokerQueueError::dispatch($this->userjob, $e->getMessage(), User::find($this->userjob->user_id));
+            BrokerQueueError::dispatch($job, $e->getMessage(), User::find($job->user_id));
         }
     }
 }
