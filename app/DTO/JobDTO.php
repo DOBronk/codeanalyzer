@@ -4,12 +4,15 @@ namespace App\DTO;
 
 class JobDTO
 {
-    public function __construct(
+    private function __construct(
         public readonly int $id,
         public readonly int $userId,
         public readonly int $jobItemId,
         public readonly string $payload
-    ) {
+    ) {}
+    public static function make(int $id, int $userId, int $jobItemId, string $payload): self
+    {
+        return new self($id, $userId, $jobItemId, $payload);
     }
 
     public static function fromArray(array $array): JobDTO
