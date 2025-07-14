@@ -46,17 +46,22 @@ class JobStep2Controller extends Controller
         DB::beginTransaction();
 
         try {
-            $job = Jobs::create(session("job_repository"))
-                ->items()
-                ->createMany(array_intersect_key(session("job_items"), array_flip($request->selectedItems)));
+            $job = Jobs::create(session("job_repository"));
+
+            $job->items()->createMany(array_intersect_key(
+                session("job_items"),
+                array_flip($request->selectedItems)
+            ));
+
+            SendBrokerQueueJob::dispatch($job, $request->user()->settings->gh_api_key);
         } catch (Exception $e) {
             DB::rollBack();
             Log::error("Error: {$e->getMessage()}", ['session' => $request]);
+
             return back()->withError("Kon job niet aanmaken!");
         }
 
         DB::commit();
-        SendBrokerQueueJob::dispatch($job);
 
         session()->forget(['job_items', 'job_repository']);
 
