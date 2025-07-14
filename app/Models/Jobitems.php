@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Cache;
+use App\Utilities\Results;
 use Illuminate\Support\Facades\Log;
 
 class Jobitems extends Model
@@ -29,44 +30,14 @@ class Jobitems extends Model
     protected function filteredResults(): Attribute
     {
         return Attribute::make(
-            get: fn(): array => $this->hasImprovements($this->results),
+            get: fn(): array => Results::hasImprovements($this->results),
         )->shouldCache();
     }
-    private function hasImprovements($arr): array
-    {
-        return Cache::rememberForever('results_' . $this->id, function () use ($arr) {
-            if (empty($arr)) {
-                return [];
-            }
 
-            return array_filter($arr, function ($item) {
-                if (is_array($item)) {
-                    return true;
-                }
-
-                $uitem = strtoupper($item);
-                return ! ($uitem === '1' || $uitem === 'OK' || $uitem === 'NOT APPLICABLE');
-            });
-        });
-    }
-    private function walkResults(&$value, $key): void
-    {
-        if (is_array($value)) {
-            array_walk($value, [$this, 'walkResults']);
-            $value = "{$key}: " . implode("\r\n", $value);
-        } else {
-            $value = "{$key}: {$value}";
-        }
-    }
     public function resultsToString(): string
     {
-        return Cache::rememberForever('results_string' . $this->id, function () {
-            if ($results = $this->filteredResults) {
-                array_walk($results, [$this, 'walkResults']);
-                return implode("\r\n", $results);
-            }
-
-            return '';
+        return Cache::remember('results_string' . $this->id, (6800), function () {
+            return Results::resultsToString($this->filteredResults);
         });
     }
 }
