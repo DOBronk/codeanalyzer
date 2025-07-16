@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreIssueRequest;
-use App\Models\Jobitems;
+use App\Models\Jobissue;
+use App\Models\Jobitem;
+use App\Services\GithubService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use App\Models\Jobissues;
-use App\Services\GithubService;
 
 class IssueController extends Controller
 {
@@ -16,38 +16,40 @@ class IssueController extends Controller
      */
     public function index(): View
     {
-        return view('issues.index', ['items' => Jobissues::with('job')->orderByDesc('created_at')->currentUser()->paginate(10)]);
+        return view('issues.index', ['items' => Jobissue::with('job')->orderByDesc('created_at')->currentUser()->paginate(10)]);
     }
 
-    public function show(Jobissues $jobissues): View
+    public function show(Jobissue $jobissue): View
     {
-        return view('issues.show', ['item' => $jobissues, 'job' => $jobissues->job]);
+        return view('issues.show', ['item' => $jobissue, 'job' => $jobissue->job]);
     }
+
     /**
      * Show the form for creating a new resource.
      */
-    public function create(Jobitems $jobitems): View
+    public function create(Jobitem $jobitem): View
     {
-        if ($jobitems->status_id != 1) {
+        if ($jobitem->status_id != 1) {
             abort(422, 'Onjuiste issue status');
         }
-        return view('issues.create', ['item' => $jobitems]);
+
+        return view('issues.create', ['item' => $jobitem]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreIssueRequest $request, Jobitems $jobitems,  GithubService $git): RedirectResponse
+    public function store(StoreIssueRequest $request, Jobitem $jobitem, GithubService $git): RedirectResponse
     {
         try {
-            $link = $git->createIssue($jobitems->job->owner, $jobitems->job->repository, $request['title'], $request['text']);
-            Jobissues::create(['git_url' => $link, ...$request->validated()]);
+            $link = $git->createIssue($jobitem->job->owner, $jobitem->job->repository, $request['title'], $request['text']);
+            Jobissue::create(['git_url' => $link, ...$request->validated()]);
         } catch (\Exception $e) {
             return back()->withError($e->getMessage());
         }
 
-        $jobitems->update(['status_id' => 3]);
+        $jobitem->update(['status_id' => 3]);
 
-        return redirect()->route('codeanalyzer.job', ['jobs' => $jobitems->job])->with('message', 'Issue succesvol aangemaakt');
+        return redirect()->route('codeanalyzer.job', ['jobs' => $jobitem->job])->with('message', 'Issue succesvol aangemaakt');
     }
 }

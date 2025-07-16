@@ -45,6 +45,7 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
     protected static function booted(): void
     {
         self::deleted(static function (User $user): void {
@@ -56,7 +57,7 @@ class User extends Authenticatable
         });
     }
 
-    public function settings()
+    public function settings(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Settings::class);
     }

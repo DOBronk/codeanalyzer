@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\SendBrokerQueueJob;
-use Illuminate\Support\Facades\DB;
-use App\Models\Jobs;
 use App\Http\Requests\StoreJobRequest;
+use App\Jobs\SendBrokerQueueJob;
+use App\Models\Job;
 use App\Utilities\TreeBuilder;
-use Illuminate\Http\RedirectResponse;
 use Exception;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class JobStep2Controller extends Controller
@@ -18,7 +18,7 @@ class JobStep2Controller extends Controller
      */
     private function checkSession(): void
     {
-        if (!session()->has(['job_items', 'job_repository'])) {
+        if (! session()->has(['job_items', 'job_repository'])) {
             abort(422, 'Session variables missing');
         }
     }
@@ -32,7 +32,7 @@ class JobStep2Controller extends Controller
 
         $items = TreeBuilder::buildTree(session('job_items'));
 
-        return view('jobs.createjob2',  compact('items'));
+        return view('jobs.createjob2', compact('items'));
     }
 
     /**
@@ -46,10 +46,10 @@ class JobStep2Controller extends Controller
         DB::beginTransaction();
 
         try {
-            $job = Jobs::create(session("job_repository"));
+            $job = Job::create(session('job_repository'));
 
             $job->items()->createMany(array_intersect_key(
-                session("job_items"),
+                session('job_items'),
                 array_flip($request->selectedItems)
             ));
 
@@ -58,13 +58,13 @@ class JobStep2Controller extends Controller
             DB::rollBack();
             Log::error("Error: {$e->getMessage()}", ['session' => $request]);
 
-            return back()->withError("Kon job niet aanmaken!");
+            return back()->withError('Kon job niet aanmaken!');
         }
 
         DB::commit();
 
         session()->forget(['job_items', 'job_repository']);
 
-        return redirect()->route("codeanalyzer.index");
+        return redirect()->route('codeanalyzer.index');
     }
 }
