@@ -13,7 +13,7 @@ class TreeBuilder
             $current = &$tree;
 
             foreach ($parts as $part) {
-                if (!isset($current[$part])) {
+                if (! isset($current[$part])) {
                     $current[$part] = [];
                 }
                 $current = &$current[$part];

@@ -8,8 +8,6 @@ class JobStep1Request extends FormRequest
 {
     /**
      * Set the default value of branch if empty, also add/overwrite the user ID
-     *
-     * @return array
      */
     public function validationData(): array
     {

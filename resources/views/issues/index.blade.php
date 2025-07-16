@@ -29,7 +29,7 @@
                                 Str::limit($item->text, 50),
                             ]" />
                             <x-column-table>
-                                <x-link href="{{ route('codeanalyzer.showissue', ['jobissues' => $item]) }}">Toon
+                                <x-link href="{{ route('codeanalyzer.showissue', ['jobissue' => $item]) }}">Toon
                                     issue</x-link><br>
                                 <x-link href="{{ $item->git_url }}" target="_blank" rel="noopener noreferrer">Github
                                     link</x-link>

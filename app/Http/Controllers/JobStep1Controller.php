@@ -2,19 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\GithubService;
-use Illuminate\Support\Facades\Log;
 use App\Http\Requests\JobStep1Request;
+use App\Services\GithubService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 
 class JobStep1Controller extends Controller
 {
     /**
      * First step for job creation
-     * @return \Illuminate\Contracts\View\View
      */
     public function index(): View
     {
@@ -32,6 +29,7 @@ class JobStep1Controller extends Controller
             $items = $git->getRepository($repository);
         } catch (\Exception $e) {
             Log::error("Error getting response from repository from API {$e->getMessage()}", $request->toArray());
+
             return back()->withError('Kon repository niet laden')->withInput();
         }
 

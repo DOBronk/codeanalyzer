@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Jobs;
-use Illuminate\Http\Request;
+use App\Models\Job;
 
 class CancleJobController extends Controller
 {
-    public function index(Jobs $jobs)
+    public function index(Job $job)
     {
-        $jobs->active = 0;
+        $job->active = 0;
 
-        $jobs->save();
+        $job->save();
 
-        return  back()->with('message', 'Job geannuleerd');
+        return back()->with('message', 'Job geannuleerd');
     }
 }

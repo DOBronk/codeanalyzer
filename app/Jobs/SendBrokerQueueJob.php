@@ -2,17 +2,14 @@
 
 namespace App\Jobs;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Log;
-
-use App\Services\GithubService;
-use App\Services\MessageBroker;
-use App\Models\Jobs;
-use App\Models\User;
 use App\DTO\JobDTO;
 use App\Events\BrokerQueueError;
-
+use App\Models\Job;
+use App\Models\User;
+use App\Services\GithubService;
+use App\Services\MessageBroker;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
 
 class SendBrokerQueueJob implements ShouldQueue
 {
@@ -21,7 +18,7 @@ class SendBrokerQueueJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(private readonly Jobs $userjob, private readonly string $api) {}
+    public function __construct(private readonly Job $userjob, private readonly string $api) {}
 
     /**
      * Execute the job.

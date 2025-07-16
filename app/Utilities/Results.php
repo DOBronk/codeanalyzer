@@ -25,15 +25,17 @@ class Results
     {
         if (is_array($value)) {
             array_walk($value, [__CLASS__, __METHOD__]);
-            $value = "{$key}: " . implode("\r\n", $value);
+            $value = "{$key}: ".implode("\r\n", $value);
         } else {
             $value = "{$key}: {$value}";
         }
     }
+
     public static function resultsToString($arr): string
     {
         if ($results = self::hasImprovements($arr)) {
             array_walk($results, [__CLASS__, 'walkResults']);
+
             return implode("\r\n", $results);
         }
 

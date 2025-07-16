@@ -4,8 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\App;
+use Symfony\Component\HttpFoundation\Response;
 
 class MiddleSetLocale
 {
@@ -17,6 +17,7 @@ class MiddleSetLocale
     public function handle(Request $request, Closure $next): Response
     {
         App::setLocale('nl_NL');
+
         return $next($request);
     }
 }

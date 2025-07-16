@@ -8,7 +8,7 @@
     <x-page-container>
         <x-message :message="Session('error')" error="1" />
 
-        <form action="{{ route('codeanalyzer.storeissue', ['jobitems' => $item]) }}" method="POST"
+        <form action="{{ route('codeanalyzer.storeissue', ['jobitem' => $item]) }}" method="POST"
             enctype="multipart/form-data" class="space-y-6">
             @csrf
             <p class="mb-2 font-semibold">Bestand: {{ $item->path }}</p>
