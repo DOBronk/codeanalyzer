@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Jobitems;
-use App\Models\Jobs;
+use App\Models\Jobitem;
+use App\Models\Job;
 use App\Models\User;
 
 class JobitemsPolicy
@@ -11,7 +11,7 @@ class JobitemsPolicy
     /**
      * Create a new policy instance.
      */
-    public function create(User $user, Jobitems $jobitems): bool
+    public function create(User $user, Jobitem $jobitems): bool
     {
         return $user->id == $jobitems->job->user_id;
     }

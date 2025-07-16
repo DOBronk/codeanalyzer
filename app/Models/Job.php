@@ -16,7 +16,7 @@ class Jobs extends Model
 
     public function items()
     {
-        return $this->hasMany(Jobitems::class, "job_id");
+        return $this->hasMany(Jobitem::class, "job_id");
     }
 
     public function scopeActiveJobs(Builder $query): Builder
