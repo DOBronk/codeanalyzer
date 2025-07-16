@@ -15,9 +15,10 @@ class StoreIssueRequest extends FormRequest
         return array_merge($this->all(), [
             'user_id' => $this->user()->id,
             'job_id' => $this->jobitems->job->id,
-            'jobitem_id' => $this->jobitems->id
+            'jobitem_id' => $this->jobitems->id,
         ]);
     }
+
     /**
      * Get the validation rules that apply to the request.
      *

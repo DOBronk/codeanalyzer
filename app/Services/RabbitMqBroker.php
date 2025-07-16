@@ -4,6 +4,7 @@ namespace App\Services;
 
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+
 class RabbitMqBroker extends MessageBroker
 {
     public function addJob(string $message)

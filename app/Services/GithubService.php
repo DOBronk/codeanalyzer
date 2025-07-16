@@ -2,15 +2,13 @@
 
 namespace App\Services;
 
+use App\Exceptions\GithubExceptions\ConflictException;
+use App\Exceptions\GithubExceptions\ResourceNotFoundException;
+use App\Exceptions\GithubExceptions\ValidationException;
+use App\Services\EnumStatus as Status;
 use Exception;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use App\Exceptions\GithubExceptions\ConflictException;
-use App\Exceptions\GithubExceptions\ValidationException;
-use App\Exceptions\GithubExceptions\ResourceNotFoundException;
-
-use App\Services\EnumStatus as Status;
 
 class GithubService
 {
@@ -20,7 +18,8 @@ class GithubService
 
     /**
      * Function to return an exception based on a HTTP status code
-     * @param int $status HTTP Status Code
+     *
+     * @param  int  $status  HTTP Status Code
      */
     private function handleStatus(Response $http): Exception|array|null
     {
@@ -36,14 +35,16 @@ class GithubService
             default => new Exception('Unkown status code')
         };
     }
+
     /**
      * Recursively retrieve all files ending with .php from provided git tree
+     *
      * @param array|string Owner of repository or can be an associative array with all values
-     * @param string $repository Repository name
-     * @param string $sha Branch name or SHA for branch
+     * @param  string  $repository  Repository name
+     * @param  string  $sha  Branch name or SHA for branch
      * @return array Returns an array with filepath as key and corresponding SHA
      */
-    public function getRepository(array $values, string $extension = ".php"): array
+    public function getRepository(array $values, string $extension = '.php'): array
     {
         if (count(array_intersect(array_keys($values), self::REPO)) === 3) {
             [$owner, $repository,  $branch] = [$values['owner'], $values['repository'], $values['branch']];
@@ -58,20 +59,21 @@ class GithubService
             throw $response;
         }
 
-        return array_filter($response['tree'], fn($item) => $item['type'] === "blob" && str_ends_with($item['path'], $extension));
+        return array_filter($response['tree'], fn ($item) => $item['type'] === 'blob' && str_ends_with($item['path'], $extension));
     }
 
     /**
      * Retrieve blob as a string from git repository
-     * @param string $owner Repository owner
-     * @param string $repo Repository
-     * @param string $sha SHA code for blob
+     *
+     * @param  string  $owner  Repository owner
+     * @param  string  $repo  Repository
+     * @param  string  $sha  SHA code for blob
      * @return string|null Return blob as string or null on failure
      */
     public function getBlob(string $owner, string $repository, string $sha, ?string $api = null): ?string
     {
         $uri = "{$this->uri}/repos/{$owner}/{$repository}/git/blobs/{$sha}";
-        $http =  Http::withToken($api ?? $this->key)->get($uri);
+        $http = Http::withToken($api ?? $this->key)->get($uri);
 
         if (($response = $this->handleStatus($http)) instanceof Exception) {
             throw $response;
@@ -79,12 +81,10 @@ class GithubService
 
         return base64_decode($response['content']);
     }
+
     /**
      * Summary of createIssue
-     * @param string $owner
-     * @param string $repository
-     * @param string $title
-     * @param string $body
+     *
      * @return bool
      */
     public function createIssue(string $owner, string $repository, string $title, string $body): string
@@ -94,7 +94,7 @@ class GithubService
         $http = Http::withToken($this->key)->post($uri, [
             'title' => $title,
             'body' => $body,
-            'labels' => ['AI Generated Issue']
+            'labels' => ['AI Generated Issue'],
         ]);
 
         if (($response = $this->handleStatus($http)) instanceof Exception) {

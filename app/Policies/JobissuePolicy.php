@@ -3,11 +3,9 @@
 namespace App\Policies;
 
 use App\Models\Jobissue;
-use App\Models\Jobitem;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
-class JobissuesPolicy
+class JobissuePolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -20,9 +18,9 @@ class JobissuesPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Jobissue $jobissues): bool
+    public function view(User $user, Jobissue $jobissue): bool
     {
-        return $user->id == $jobissues->user_id;
+        return $user->id == $jobissue->user_id;
     }
 
     /**
