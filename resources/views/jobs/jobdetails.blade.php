@@ -33,7 +33,7 @@
                         </x-column-table>
                         <x-column-table>
                             @if ($item->status_id == 1 && $item->filteredResults)
-                                <form action="{{ route('codeanalyzer.createissue', ['jobitems' => $item]) }}">
+                                <form action="{{ route('codeanalyzer.createissue', ['jobitem' => $item]) }}">
                                     <x-button-blue>Issue aanmaken</x-button-blue>
                                 </form>
                             @endif

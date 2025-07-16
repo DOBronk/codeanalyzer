@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Jobs') }}
+            {{ __('Job') }}
         </h2>
     </x-slot>
 
@@ -16,7 +16,7 @@
                     __('Branch'),
                     __('Aantal items'),
                     __('Status'),
-                    'Acties',
+                    __('Acties'),
                 ]">
                     @foreach ($items as $item)
                         <x-row-table class="hover:bg-gray-50">
@@ -27,12 +27,13 @@
                                 $item->branch,
                                 count($item->items),
                                 $item->active,
-                            ]" />
+                            ]"/>
                             <x-column-table>
-                                <x-link href="{{ route('codeanalyzer.job', ['jobs' => $item]) }}">Toon details</x-link>
+                                <x-link href="{{ route('codeanalyzer.job', ['job' => $item]) }}">Toon details</x-link>
                                 @if ($item->active)
-                                    <x-link href="{{ route('job.cancel', ['jobs' => $item]) }}"
-                                        onclick="return confirm('Zeker weten?');">Annuleren</x-link>
+                                    <x-link href="{{ route('job.cancel', ['job' => $item]) }}"
+                                            onclick="return confirm('Zeker weten?');">Annuleren
+                                    </x-link>
                                 @endif
                             </x-column-table>
                         </x-row-table>
@@ -47,14 +48,15 @@
         @cannot('hasAPI')
             <p class="mb-2 text-red-600 font-semibold">Er is nog geen github API key ingesteld. Jobs
                 aanmaken is niet mogelijk</p>
-        @elsecannot('noActiveJobs', 'App\\Models\Jobs')
+        @elsecannot('noActiveJobs', 'App\\Models\Job')
             <p class="mb-2 text-red-600 font-semibold">Er staat nog een job in de wacht, u kunt geen nieuwe
                 jobs aanmaken</p>
         @else
             <p class="mb-2 text-green-700 font-semibold">Er zijn geen actieve jobs, u kunt een nieuwe job
                 toevoegen</p>
             <x-button-blue href="{{ route('codeanalyzer.create.step.one') }}" type="link">Nieuwe job
-                aanmaken</x-button-blue>
+                aanmaken
+            </x-button-blue>
         @endcan
     </x-page-container>
 
