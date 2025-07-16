@@ -2,6 +2,4 @@
 
 namespace App\Exceptions\GithubExceptions;
 
-class ResourceNotFoundException extends \Exception
-{
-}
+class ResourceNotFoundException extends \Exception {}

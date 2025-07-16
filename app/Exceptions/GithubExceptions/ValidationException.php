@@ -2,6 +2,4 @@
 
 namespace App\Exceptions\GithubExceptions;
 
-class ValidationException extends \Exception
-{
-}
+class ValidationException extends \Exception {}

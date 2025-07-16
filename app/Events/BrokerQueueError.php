@@ -2,15 +2,12 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use App\Models\Job;
+use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Jobs;
-use App\Models\User;
 
 class BrokerQueueError
 {
@@ -19,7 +16,7 @@ class BrokerQueueError
     /**
      * Create a new event instance.
      */
-    public function __construct(public Jobs $job, public string $error, public User $user)
+    public function __construct(public Job $job, public string $error, public User $user)
     {
         //
     }

@@ -10,6 +10,7 @@ class JobDTO
         public readonly int $jobItemId,
         public readonly string $payload
     ) {}
+
     public static function make(int $id, int $userId, int $jobItemId, string $payload): self
     {
         return new self($id, $userId, $jobItemId, $payload);
@@ -23,8 +24,10 @@ class JobDTO
     public static function fromJson(string $json): JobDTO
     {
         $array = json_decode($json, true);
+
         return self::fromArray($array);
     }
+
     public function toJson(): string
     {
         return json_encode($this);
