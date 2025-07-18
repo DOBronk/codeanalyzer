@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\GithubExceptions\AuthorizationException;
 use App\Exceptions\GithubExceptions\ConflictException;
 use App\Exceptions\GithubExceptions\ResourceNotFoundException;
 use App\Exceptions\GithubExceptions\ValidationException;
@@ -27,12 +28,12 @@ class GithubService
             Status::OK => $http->json(),
             Status::Created => $http->json(),
             Status::NoContent => null,
-            Status::AuthFailed => new Exception('Login failed, please check your API key settings'),
-            Status::ResourceNotFound => new ResourceNotFoundException('Resource not found!'),
-            Status::Conflict => new ConflictException('Conflict!'),
-            Status::IssuesDisable => new Exception('Issues are disabled for this repository'),
-            Status::ValidationError => new ValidationException('Validation error!'),
-            default => new Exception('Unkown status code')
+            Status::AuthFailed => new AuthorizationException(trans('exceptions.auth_failed')),
+            Status::ResourceNotFound => new ResourceNotFoundException(trans('exceptions.resource_missing')),
+            Status::Conflict => new ConflictException(trans('exceptions.conflict')),
+            Status::IssuesDisable => new Exception(trans('exceptions.issues_disabled')),
+            Status::ValidationError => new ValidationException(trans('exceptions.validation')),
+            default => new Exception(trans('exceptions.unknown'))
         };
     }
 
@@ -59,7 +60,7 @@ class GithubService
             throw $response;
         }
 
-        return array_filter($response['tree'], fn ($item) => $item['type'] === 'blob' && str_ends_with($item['path'], $extension));
+        return array_filter($response['tree'], fn($item) => $item['type'] === 'blob' && str_ends_with($item['path'], $extension));
     }
 
     /**

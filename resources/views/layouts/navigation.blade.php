@@ -16,7 +16,7 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                     <x-nav-link :href="route('codeanalyzer.index')" :active="request()->routeIs('codeanalyzer.index')">
-                        {{ __('Job') }}
+                        {{ __('Jobs') }}
                     </x-nav-link>
                     <x-nav-link :href="route('codeanalyzer.issues')" :active="request()->routeIs('codeanalyzer.issues')">
                         {{ __('Issues') }}

@@ -29,10 +29,6 @@ class IssueController extends Controller
      */
     public function create(Jobitem $jobitem): View
     {
-        if ($jobitem->status_id != 1) {
-            abort(422, 'Onjuiste issue status');
-        }
-
         return view('issues.create', ['item' => $jobitem]);
     }
 
@@ -43,11 +39,11 @@ class IssueController extends Controller
     {
         try {
             $link = $git->createIssue($jobitem->job->owner, $jobitem->job->repository, $request['title'], $request['text']);
-            Jobissue::create(['git_url' => $link, ...$request->validated()]);
         } catch (\Exception $e) {
             return back()->withError($e->getMessage());
         }
 
+        Jobissue::create(['git_url' => $link, ...$request->validated()]);
         $jobitem->update(['status_id' => 3]);
 
         return redirect()->route('codeanalyzer.job', ['jobs' => $jobitem->job])->with('message', 'Issue succesvol aangemaakt');

@@ -8,7 +8,7 @@
     <x-page-container>
         <x-message :message="Session('message')" />
 
-        <p class="mb-2 font-semibold">Job:</p>
+        <p class="mb-2 font-semibold">{{ __('Job') }}:</p>
         <div class="overflow-x-auto mb-6">
             <x-data-table :headers="[__('Id'), __('Eigenaar'), __('Repository'), __('Branch'), __('Status')]">
                 <x-row-table>
@@ -17,7 +17,7 @@
             </x-data-table>
         </div>
 
-        <p class="mb-2 font-semibold">Items</p>
+        <p class="mb-2 font-semibold"> {{ __('Items')}}</p>
         <div class="overflow-x-auto">
             <x-data-table :headers="[__('Bestand'), __('Status'), __('Resultaat'), __('Acties')]">
                 @foreach ($job->items as $item)
@@ -28,13 +28,13 @@
                             @if ($item->filteredResults)
                                 <x-text>{{ $item->resultsToString() }}</x-text>
                             @elseif ($item->status_id != 0)
-                                Geen aanmerkingen
+                                {{ __('Geen aanmerkingen')}}
                             @endif
                         </x-column-table>
                         <x-column-table>
                             @if ($item->status_id == 1 && $item->filteredResults)
                                 <form action="{{ route('codeanalyzer.createissue', ['jobitem' => $item]) }}">
-                                    <x-button-blue>Issue aanmaken</x-button-blue>
+                                    <x-button-blue>{{ __('issue.create') }}</x-button-blue>
                                 </form>
                             @endif
                         </x-column-table>

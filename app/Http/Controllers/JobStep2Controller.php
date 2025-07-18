@@ -14,22 +14,10 @@ use Illuminate\Support\Facades\Log;
 class JobStep2Controller extends Controller
 {
     /**
-     * Check to see if the required session variables are set
-     */
-    private function checkSession(): void
-    {
-        if (! session()->has(['job_items', 'job_repository'])) {
-            abort(422, 'Session variables missing');
-        }
-    }
-
-    /**
      * Build a multi-dimensional array for rendering the tree and pass to the view
      */
     public function index(): \Illuminate\Contracts\View\View
     {
-        $this->checkSession();
-
         $items = TreeBuilder::buildTree(session('job_items'));
 
         return view('jobs.createjob2', compact('items'));
@@ -41,8 +29,6 @@ class JobStep2Controller extends Controller
      */
     public function store(StoreJobRequest $request): RedirectResponse
     {
-        $this->checkSession();
-
         DB::beginTransaction();
 
         try {

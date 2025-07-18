@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\JobStep1Request;
+use App\Exceptions\GithubExceptions;
+use App\Exceptions\GithubExceptions\AuthorizationException;
 use App\Services\GithubService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -30,7 +32,7 @@ class JobStep1Controller extends Controller
         } catch (\Exception $e) {
             Log::error("Error getting response from repository from API {$e->getMessage()}", $request->toArray());
 
-            return back()->withError('Kon repository niet laden')->withInput();
+            return back()->withError($e->getMessage())->withInput();
         }
 
         session()->put('job_items', $items);
