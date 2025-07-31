@@ -46,6 +46,6 @@ class IssueController extends Controller
         Jobissue::create(['git_url' => $link, ...$request->validated()]);
         $jobitem->update(['status_id' => 3]);
 
-        return redirect()->route('codeanalyzer.job', ['jobs' => $jobitem->job])->with('message', 'Issue succesvol aangemaakt');
+        return redirect()->route('codeanalyzer.job', ['job' => $jobitem->job])->with('message', trans('issue.createsuccess'));
     }
 }

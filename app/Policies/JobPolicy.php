@@ -11,7 +11,7 @@ class JobPolicy
     public function noActiveJobs()
     {
         return Job::query()->currentUser()->activeJobs()->count()
-            ? Response::deny('Not allowed while a job is active') : Response::allow();
+            ? Response::deny(trans('messages.activejob')) : Response::allow();
     }
 
     public function view(?User $user, Job $job)

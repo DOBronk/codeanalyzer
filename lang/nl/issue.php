@@ -7,5 +7,6 @@ return [
     |--------------------------------------------------------------------------
     */
     "create" => "Issue aanmaken",
-
+    "empty" => "Nog geen issues aangemaakt",
+    "createsuccess" => "Issue succesvol aangemaakt",
 ];

@@ -8,14 +8,6 @@ use App\Models\User;
 class JobissuePolicy
 {
     /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return false;
-    }
-
-    /**
      * Determine whether the user can view the model.
      */
     public function view(User $user, Jobissue $jobissue): bool
@@ -29,37 +21,5 @@ class JobissuePolicy
     public function create(User $user, Jobissue $itemid): bool
     {
         return $user->id == $itemid->job->user_id;
-    }
-
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Jobissue $jobissues): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Jobissue $jobissues): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Jobissue $jobissues): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Jobissue $jobissues): bool
-    {
-        return false;
     }
 }

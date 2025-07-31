@@ -2,39 +2,13 @@
 
 namespace App\Services;
 
-use App\Exceptions\GithubExceptions\AuthorizationException;
-use App\Exceptions\GithubExceptions\ConflictException;
-use App\Exceptions\GithubExceptions\ResourceNotFoundException;
-use App\Exceptions\GithubExceptions\ValidationException;
-use App\Services\EnumStatus as Status;
-use Exception;
-use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Http;
+use App\Abstracts\ApiController;
 
-class GithubService
+class GithubService extends ApiController
 {
-    private const REPO = ['owner', 'repository', 'branch'];
-
-    public function __construct(private readonly string $uri, private string $key) {}
-
-    /**
-     * Function to return an exception based on a HTTP status code
-     *
-     * @param  int  $status  HTTP Status Code
-     */
-    private function handleStatus(Response $http): Exception|array|null
+    public function __construct(private readonly string $uri, string $key)
     {
-        return match (Status::from($http->status())) {
-            Status::OK => $http->json(),
-            Status::Created => $http->json(),
-            Status::NoContent => null,
-            Status::AuthFailed => new AuthorizationException(trans('exceptions.auth_failed')),
-            Status::ResourceNotFound => new ResourceNotFoundException(trans('exceptions.resource_missing')),
-            Status::Conflict => new ConflictException(trans('exceptions.conflict')),
-            Status::IssuesDisable => new Exception(trans('exceptions.issues_disabled')),
-            Status::ValidationError => new ValidationException(trans('exceptions.validation')),
-            default => new Exception(trans('exceptions.unknown'))
-        };
+        parent::__construct($key);
     }
 
     /**
@@ -47,18 +21,9 @@ class GithubService
      */
     public function getRepository(array $values, string $extension = '.php'): array
     {
-        if (count(array_intersect(array_keys($values), self::REPO)) === 3) {
-            [$owner, $repository,  $branch] = [$values['owner'], $values['repository'], $values['branch']];
-        } else {
-            throw new Exception('Invalid value passed to function');
-        }
+        $this->setRepository($values);
 
-        $uri = "{$this->uri}/repos/{$owner}/{$repository}/git/trees/{$branch}";
-        $http = Http::withToken($this->key)->get($uri, ['recursive' => 1]);
-
-        if (($response = $this->handleStatus($http)) instanceof Exception) {
-            throw $response;
-        }
+        $response = $this->get("{$this->uri}/repos/{$this->owner}/{$this->repository}/git/trees/{$this->branch}", ['recursive' => 1]);
 
         return array_filter($response['tree'], fn($item) => $item['type'] === 'blob' && str_ends_with($item['path'], $extension));
     }
@@ -71,14 +36,13 @@ class GithubService
      * @param  string  $sha  SHA code for blob
      * @return string|null Return blob as string or null on failure
      */
-    public function getBlob(string $owner, string $repository, string $sha, ?string $api = null): ?string
+    public function getBlob(string $sha, string|null $owner = null, string|null $repository = null): ?string
     {
-        $uri = "{$this->uri}/repos/{$owner}/{$repository}/git/blobs/{$sha}";
-        $http = Http::withToken($api ?? $this->key)->get($uri);
-
-        if (($response = $this->handleStatus($http)) instanceof Exception) {
-            throw $response;
+        if (isset($owner) && isset($repository)) {
+            $this->setRepository($owner, $repository);
         }
+
+        $response = $this->get("{$this->uri}/repos/{$this->owner}/{$this->repository}/git/blobs/{$sha}");
 
         return base64_decode($response['content']);
     }
@@ -90,17 +54,11 @@ class GithubService
      */
     public function createIssue(string $owner, string $repository, string $title, string $body): string
     {
-        $uri = "{$this->uri}/repos/{$owner}/{$repository}/issues";
-
-        $http = Http::withToken($this->key)->post($uri, [
+        $response = $this->post("{$this->uri}/repos/{$owner}/{$repository}/issues", [
             'title' => $title,
             'body' => $body,
             'labels' => ['AI Generated Issue'],
         ]);
-
-        if (($response = $this->handleStatus($http)) instanceof Exception) {
-            throw $response;
-        }
 
         return $response['html_url'];
     }

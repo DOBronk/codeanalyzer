@@ -4,10 +4,11 @@ namespace App\Models;
 
 use App\Traits\UserScope;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Jobissue extends Model
 {
-    use UserScope;
+    use UserScope, HasFactory;
 
     protected $table = 'codeanalyzer_job_issues';
 

@@ -14,8 +14,8 @@ class StoreIssueRequest extends FormRequest
     {
         return array_merge($this->all(), [
             'user_id' => $this->user()->id,
-            'job_id' => $this->jobitems->job->id,
-            'jobitem_id' => $this->jobitems->id,
+            'job_id' => $this->jobitem->job->id,
+            'jobitem_id' => $this->jobitem->id,
         ]);
     }
 

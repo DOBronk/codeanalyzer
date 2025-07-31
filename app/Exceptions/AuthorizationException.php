@@ -1,5 +1,5 @@
 <?php
 
-namespace App\Exceptions\GithubExceptions;
+namespace App\Exceptions;
 
 class AuthorizationException extends \Exception {}

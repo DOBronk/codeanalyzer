@@ -4,11 +4,13 @@ namespace App\Models;
 
 use App\Utilities\Results;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 class Jobitem extends Model
 {
+    use HasFactory;
     protected $fillable = ['job_id', 'path', 'sha', 'status_id', 'results'];
 
     protected $table = 'codeanalyzer_job_items';
@@ -35,13 +37,13 @@ class Jobitem extends Model
     protected function filteredResults(): Attribute
     {
         return Attribute::make(
-            get: fn (): array => Results::hasImprovements($this->results),
+            get: fn(): array => Results::hasImprovements($this->results),
         )->shouldCache();
     }
 
     public function resultsToString(): string
     {
-        return Cache::remember('results_string'.$this->id, (6800), function () {
+        return Cache::remember('results_string' . $this->id, (6800), function () {
             return Results::resultsToString($this->filteredResults);
         });
     }
