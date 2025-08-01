@@ -7,38 +7,41 @@ use App\Events\BrokerQueueError;
 use App\Models\Job;
 use App\Models\User;
 use App\Services\GithubService;
+use App\Interfaces\IGithubService;
 use App\Services\MessageBroker;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class SendBrokerQueueJob implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, SerializesModels;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(private readonly Job $userjob, private readonly string $api) {}
+    public function __construct(private Job $userjob) {}
 
     /**
      * Execute the job.
      */
-    public function handle(GithubService $git, MessageBroker $broker): void
+    public function handle(IGithubService $git, MessageBroker $broker): void
     {
         try {
             $tasks = [];
-            $job = $this->userjob;
-            $git->setApiKey($this->api);
-            $git->setRepository($job->owner, $job->repository);
+            $git->setRepositoryArray($this->userjob->toArray());
+            $git->setApi($this->userjob->load(['user'])->user->settings->gh_api_key);
 
-            $job->items()->each(function ($item) use ($git, &$tasks, $job) {
+            $this->userjob->items()->each(function ($item) use ($git, &$tasks) {
                 $code = $git->getBlob($item->sha);
-                $tasks[] = JobDTO::make($job->id, $job->user_id, $item->id, $code)->toJson();
+                $tasks[] = JobDTO::make($item, $code)->toJson();
             }, 100);
 
             $broker->addJobs($tasks);
         } catch (\Exception $e) {
-            BrokerQueueError::dispatch($job, $e->getMessage(), User::find($job->user_id));
+            Log::critical("Array omzetten", $this->userjob->toArray());
+            BrokerQueueError::dispatch($this->userjob, $e->getMessage() . ' ' . $e->getLine() . ' ' . $e->getFile() . ' ' . $e->getTraceAsString() . "  :  ", $this->userjob->load(['user'])->user);
         }
     }
 }

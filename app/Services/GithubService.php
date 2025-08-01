@@ -3,14 +3,23 @@
 namespace App\Services;
 
 use App\Abstracts\ApiController;
+use App\Interfaces\IGithubService;
+use App\Traits\GitRepository;
 
-class GithubService extends ApiController
+class GithubService extends ApiController implements IGithubService
 {
-    public function __construct(private readonly string $uri, string $key)
+    use GitRepository;
+
+    public function __construct(private string $uri, string $key)
     {
+        $this->uri .= '/repos/';
         parent::__construct($key);
     }
 
+    public function setApi($api)
+    {
+        $this->setApiKey($api);
+    }
     /**
      * Recursively retrieve all files ending with .php from provided git tree
      *
@@ -21,9 +30,9 @@ class GithubService extends ApiController
      */
     public function getRepository(array $values, string $extension = '.php'): array
     {
-        $this->setRepository($values);
+        $this->setRepositoryArray($values);
 
-        $response = $this->get("{$this->uri}/repos/{$this->owner}/{$this->repository}/git/trees/{$this->branch}", ['recursive' => 1]);
+        $response = $this->get("{$this->uri}{$this->owner}/{$this->repository}/git/trees/{$this->branch}", ['recursive' => 1]);
 
         return array_filter($response['tree'], fn($item) => $item['type'] === 'blob' && str_ends_with($item['path'], $extension));
     }
@@ -36,13 +45,13 @@ class GithubService extends ApiController
      * @param  string  $sha  SHA code for blob
      * @return string|null Return blob as string or null on failure
      */
-    public function getBlob(string $sha, string|null $owner = null, string|null $repository = null): ?string
+    public function getBlob(string $sha): string
     {
-        if (isset($owner) && isset($repository)) {
-            $this->setRepository($owner, $repository);
-        }
+        // if ($this->isEmpty()) {
+        //     throw new \Exception(trans('messages.missingrepository'));
+        //  }
 
-        $response = $this->get("{$this->uri}/repos/{$this->owner}/{$this->repository}/git/blobs/{$sha}");
+        $response = $this->get("{$this->uri}{$this->owner}/{$this->repository}/git/blobs/{$sha}");
 
         return base64_decode($response['content']);
     }
@@ -54,7 +63,7 @@ class GithubService extends ApiController
      */
     public function createIssue(string $owner, string $repository, string $title, string $body): string
     {
-        $response = $this->post("{$this->uri}/repos/{$owner}/{$repository}/issues", [
+        $response = $this->post("{$this->uri}{$owner}/{$repository}/issues", [
             'title' => $title,
             'body' => $body,
             'labels' => ['AI Generated Issue'],
