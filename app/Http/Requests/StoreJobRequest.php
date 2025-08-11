@@ -14,7 +14,7 @@ class StoreJobRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'selectedItems' => ['required', 'array', 'min:1'],
+            'selections' => ['required', 'array', 'min:1'],
         ];
     }
 }

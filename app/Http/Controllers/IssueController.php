@@ -38,7 +38,7 @@ class IssueController extends Controller
     public function store(StoreIssueRequest $request, Jobitem $jobitem, GithubService $git): RedirectResponse
     {
         try {
-            $link = $git->createIssue($jobitem->job->owner, $jobitem->job->repository, $request['title'], $request['text']);
+            $link = $git->gitDatabase()->issues()->createIssue($jobitem->job->owner, $jobitem->job->repository, $request['title'], $request['text']);
         } catch (\Exception $e) {
             return back()->withError($e->getMessage());
         }

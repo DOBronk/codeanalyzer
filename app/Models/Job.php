@@ -20,6 +20,11 @@ class Job extends Model
         return $this->hasMany(Jobitem::class, 'job_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function scopeActiveJobs(Builder $query): Builder
     {
         return $query->where('active', '=', '1');

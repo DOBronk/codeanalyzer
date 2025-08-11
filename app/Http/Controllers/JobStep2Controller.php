@@ -18,7 +18,7 @@ class JobStep2Controller extends Controller
      */
     public function index(): \Illuminate\Contracts\View\View
     {
-        $items = TreeBuilder::buildTree(session('job_items'));
+        $items = TreeBuilder::buildTree3(session('job_items'));
 
         return view('jobs.createjob2', compact('items'));
     }
@@ -32,14 +32,14 @@ class JobStep2Controller extends Controller
         DB::beginTransaction();
 
         try {
-            $job = Job::create(session('job_repository'));
+            $job = Job::create(['user_id' => $request->user()->id, ...$request->all()]);
+            $job->items()->createMany($request->selections);
+            //  $job->items()->createMany(array_intersect_key(
+            //     session('job_items'),
+            //      array_flip($request->selectedItems)
+            //  ));
 
-            $job->items()->createMany(array_intersect_key(
-                session('job_items'),
-                array_flip($request->selectedItems)
-            ));
-
-            SendBrokerQueueJob::dispatch($job, $request->user()->settings->gh_api_key);
+            SendBrokerQueueJob::dispatch($job->load('user'));
         } catch (Exception $e) {
             DB::rollBack();
             Log::error("Error: {$e->getMessage()}", ['session' => $request]);

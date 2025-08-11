@@ -3,32 +3,40 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\JobStep1Request;
-use App\Exceptions\GithubExceptions;
-use App\Exceptions\GithubExceptions\AuthorizationException;
 use App\Services\GithubService;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
+use App\Utilities\TreeBuilder;
+use Inertia\Inertia;
 
 class JobStep1Controller extends Controller
 {
     /**
      * First step for job creation
      */
-    public function index(): View
+    public function index()
     {
-        return view('jobs.createjob1');
+        return self::newCreator(); // view('jobs.createjob1');
     }
 
+    public static function newCreator()
+    {
+        return Inertia::render(
+            'treeviewer',
+            ['csrf' => csrf_token(), 'route' => route('codeanalyzer.create.step.two.post')]
+        )
+            ->withViewData(['vueHeader' => trans('job.create')]);
+    }
     /**
      * Try to retrieve the repository from GitHub
      */
-    public function create(JobStep1Request $request, GitHubService $git): RedirectResponse
+    public function create(JobStep1Request $request, GithubService $git): RedirectResponse
     {
         $repository = $request->validated();
 
         try {
-            $items = $git->getRepository($repository);
+            $items = $git->gitDatabase()->repositories()->getRepositoryFiles($repository);
+            dd(TreeBuilder::buildTree5(array_filter($items, fn($item) => $item['type'] !== 'blb' && !str_ends_with($item['path'], '.php121'))));
         } catch (\Exception $e) {
             Log::error("Error getting response from repository from API {$e->getMessage()}", $request->toArray());
 

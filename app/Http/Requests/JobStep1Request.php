@@ -25,7 +25,7 @@ class JobStep1Request extends FormRequest
             'owner' => 'required|string|max:255',
             'repository' => 'required|string|max:255',
             'branch' => 'nullable|string|max:255',
-            'user_id' => '',
+            'user_id' => ''
         ];
     }
 }

@@ -11,12 +11,11 @@ use App\Interfaces\IGithubService;
 use App\Services\MessageBroker;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
 class SendBrokerQueueJob implements ShouldQueue
 {
-    use Queueable, SerializesModels;
+    use Queueable;
 
     /**
      * Create a new job instance.
@@ -26,15 +25,15 @@ class SendBrokerQueueJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(IGithubService $git, MessageBroker $broker): void
+    public function handle(GithubService $git, MessageBroker $broker): void
     {
         try {
             $tasks = [];
-            $git->setRepositoryArray($this->userjob->toArray());
+            $git->gitDatabase()->repositories()->setRepositoryArray($this->userjob->toArray());
             $git->setApi($this->userjob->load(['user'])->user->settings->gh_api_key);
 
             $this->userjob->items()->each(function ($item) use ($git, &$tasks) {
-                $code = $git->getBlob($item->sha);
+                $code = $git->gitDatabase()->blobs()->getBlob($item->sha);
                 $tasks[] = JobDTO::make($item, $code)->toJson();
             }, 100);
 

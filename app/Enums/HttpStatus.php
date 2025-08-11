@@ -2,8 +2,6 @@
 
 namespace App\Enums;
 
-use App\Enums\HttpError;
-
 enum HttpStatus: int
 {
     case OK = 200;
@@ -19,9 +17,4 @@ enum HttpStatus: int
     case UnprocessableEntity = 422;
     case TooManyRequests = 429;
     case InternalServerError = 500;
-
-    public function hasError(): bool|HttpError 
-    {
-        return !($this->value >= 200 && $this->value < 300) ? HttpError::fromStatus($this->value) : false;
-    }
 }

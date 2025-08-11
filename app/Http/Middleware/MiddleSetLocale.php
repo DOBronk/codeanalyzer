@@ -16,7 +16,7 @@ class MiddleSetLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
-        App::setLocale('nl_NL');
+        // App::setLocale('en');
 
         return $next($request);
     }

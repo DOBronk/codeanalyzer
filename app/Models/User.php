@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
     ];
 
+    protected $with = ['settings'];
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -57,7 +58,7 @@ class User extends Authenticatable
         });
     }
 
-    public function settings(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function settings()
     {
         return $this->hasOne(Settings::class);
     }
