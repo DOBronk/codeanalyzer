@@ -10,7 +10,7 @@ abstract class ApiController
 
     public function getService(): GithubService
     {
-        return $this->git ?? null;
+        return $this->git;
     }
     public function config(): self
     {

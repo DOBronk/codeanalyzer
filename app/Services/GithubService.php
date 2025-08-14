@@ -38,7 +38,6 @@ class GithubService
     }
     public function github($name): ApiController
     {
-        Log::info("{$name} accessed");
         return match ($name) {
             'git' => new GitHub($this),
             default => null
