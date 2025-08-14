@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Abstracts;
+namespace App\Services\GitHubApi\Abstracts;
 
 use App\Services\GithubService;
 
@@ -8,7 +8,7 @@ abstract class ApiController
 {
     public function __construct(private GitHubService $git) {}
 
-    public function getService(): ?GithubService
+    public function getService(): GithubService
     {
         return $this->git ?? null;
     }

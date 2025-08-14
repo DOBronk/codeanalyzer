@@ -4,19 +4,18 @@
       <div class="flex items-center justify-center">
         <div class="flex flex-col gap-2 w-6/20">
           <label for="repo">Eigenaar</label>
-          <InputText v-model="owner" :value="owner" name="owner" :invalid="!validOwner" :disabled="ownerLocked"
-            class="w-9/10" />
+          <InputText v-model="owner" :value="owner" name="owner" :invalid="!validOwner" class="w-9/10" />
         </div>
         <div class="flex flex-col gap-2 w-6/20">
           <label for="repo">Repository</label>
-          <Select v-model="selectedRepository" @change="branchChange" :options="repositories" :placeholder="repository"
-            filter optionLabel="name" optionValue="name" class="w-9/10" :disabled="!validOwner" />
+          <Select v-model="selectedRepository" @change="changeBranch" :options="repositories" :placeholder="repository"
+            class="w-9/10" :disabled="!validOwner" />
           <input type="hidden" name="repository" :value="selectedRepository" />
         </div>
         <div class="flex flex-col gap-2 w-5/20">
           <label for="branch">Branch</label>
-          <Select v-model="selectedBranch" @change="changeTree" :options="branches" :placeholder="branch"
-            optionLabel="name" optionValue="name" class="w-9/10" :disabled="!validOwner" />
+          <Select v-model="selectedBranch" @change="changeTree" :options="cbranch" :placeholder="branch" class="w-9/10"
+            :disabled="!validOwner" />
           <input type="hidden" name="branch" :value="selectedBranch" />
         </div>
         <div class="flex flex-col right-0 w-3/20">
@@ -56,8 +55,9 @@
 
       <template v-for="(x, index) in selectedKey">
         <template v-if="!index.includes(':folder:')">
-          <input type="hidden" :name="nameMe(false, 'path')" :value="splitMe(index, 0)" />
-          <input type="hidden" :name="nameMe(true, 'sha')" :value="splitMe(index, 1)" />
+          <input type="hidden" :name="'selections[' + curIndex.toString() + '][path]'" :value="index.split(':')[0]" />
+          <input type="hidden" :name="'selections[' + (curIndex++).toString() + '][sha]'"
+            :value='index.split(":")[1]' />
         </template>
       </template>
     </form>
@@ -66,45 +66,46 @@
 
 <script setup>
 import Button from "primevue/button";
+import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import Message from "primevue/message";
 import ProgressSpinner from "primevue/progressspinner";
+import TreeTable from "primevue/treetable";
+import Column from "primevue/column";
 import _debounce from "lodash/debounce";
 import { ref, watch, computed } from "vue";
 
 const props = defineProps(["csrf", "owner", "route"]);
 
 const nodes = ref(null),
-  branches = ref(),
+  branches = ref([null]),
   selectedBranch = ref(),
   selectedRepository = ref(),
   selectedKey = ref(),
-  mainBranch = ref(),
   owner = ref(props.owner),
-  repositories = defineModel(),
-  ownerLocked = props.owner ? true : false;
+  repositories = ref(),
+  cbranch = ref();
 
-const validOwner = computed(() => {
-  if (ownerLocked) {
-    return true;
-  }
-  return repositories?.value == null ? false : true;
-}),
+let mainBranches = [];
+let trees = {};
+let curIndex = 0;
+
+const validOwner = computed(() => repositories.value == null ? false : true),
   canSubmit = computed(() => countFiles.value > 0),
+  selectedIndex = computed(() => repositories.value.length > 0 ? repositories.value.findIndex((repo) => repo == selectedRepository.value) : 0),
   countFiles = computed(() => {
     return selectedKey.value ? Object.keys(selectedKey.value).filter((val) => !val.includes('folder')).length : 0;
   });
 
-let trees = {}; // [props.repository]: { [props.branch]: props.nodes }
-let curIndex = 0;
+// Reset de index van geselecteerde bestanden zodra er een wijziging
+// optreed. Zo begint de v-for van de hidden input field weer correct.
+watch(selectedKey, (newVal) => {
+  curIndex = 0;
+});
 
-if (ownerLocked) {
-  getRepositories(owner.value);
-} else {
-  watch(owner, (newVal) => {
-    updateModel(newVal);
-  });
-}
+watch(owner, (newVal) => {
+  updateModel(newVal);
+});
 
 watch(nodes, (newVal) => {
   if (newVal == null) {
@@ -112,45 +113,31 @@ watch(nodes, (newVal) => {
   }
 });
 
-watch(selectedKey, (newVal) => {
-  curIndex = 0;
-});
-
 const updateModel = _debounce((newVal) => {
   getRepositories(newVal);
 }, 500);
 
-function splitMe(value, index) {
-  return value.split(":")[index];
-}
-
-function nameMe(last, name) {
-  let result = "selections[" + curIndex.toString() + "][" + name + "]";
-  if (last) {
-    curIndex++;
-  }
-  return result;
-}
-
-function handleError(error) {
-  if (error.response.status == 401) {
-    location.replace(location.protocol + "//" + location.hostname + "/login");
-  }
-}
-
-function branchChange() {
+function changeBranch() {
   nodes.value = null;
-  axios
-    .post("http://localhost/getbranches", {
-      owner: owner.value,
-      repository: selectedRepository.value,
-    })
-    .then((response) => {
-      var een = Object.values(response.data)[0];
-      branches.value = response.data;
-      selectedBranch.value = Object.values(een)[0];
-      getDefault(owner.value, selectedRepository.value);
-    }).catch((error) => handleError(error));
+  let index = selectedIndex.value;
+
+  if (branches.value[index] == null) {
+    axios
+      .post("/getbranches", {
+        owner: owner.value,
+        repository: repositories.value[index],
+      })
+      .then((response) => {
+        branches.value[index] = response.data;
+        cbranch.value = branches.value[index];
+        selectedBranch.value = mainBranches.value[index];
+        changeTree();
+      }).catch((error) => handleError(error));
+  } else {
+    cbranch.value = branches.value[index]
+    selectedBranch.value = mainBranches.value[index];
+    changeTree();
+  }
 }
 
 function getRepositories(ownerRepo) {
@@ -158,51 +145,53 @@ function getRepositories(ownerRepo) {
   repositories.value = null;
 
   axios.post("/getrepositories", { owner: ownerRepo }).then(function (response) {
-    repositories.value = response.data;
-    var een = Object.values(response.data)[0];
-    selectedRepository.value = Object.values(een)[0];
-    branchChange();
+    repositories.value = response.data[0];
+    mainBranches.value = response.data[1];
+
+    selectedRepository.value = repositories.value[0];
+    changeBranch();
   }).catch((error) => handleError(error))
 }
 
-function getDefault(own, repo) {
-  //own ??= owner.value;
-  //repo ??= selectedRepository.value;
-  axios.post("/getdefault", { owner: own, repository: repo }).then(function (response) {
-    mainBranch.value = response.data;
-    selectedBranch.value = response.data;
-    changeTree();
-  });
-}
-
 function changeTree() {
-  if (selectedRepository.value in trees && selectedBranch.value in trees[selectedRepository.value]) {
-    nodes.value = trees[selectedRepository.value][selectedBranch.value];
-  } else {
-    nodes.value = null;
-    changeRef();
+  if ((nodes.value = getIfExists(owner.value, selectedRepository.value, selectedBranch.value, true)) == null) {
+    axios
+      .post("/gettree", {
+        owner: owner.value,
+        branch: selectedBranch.value,
+        repository: selectedRepository.value,
+      })
+      .then(function (response) {
+        nodes.value = response.data;
+        saveTree(owner.value, selectedRepository.value, selectedBranch.value);
+      }).catch((error) => handleError(error));
   }
 }
 
-function saveTree(rep, bra) {
-  if (rep in trees) {
-    trees[rep][bra] = nodes.value;
+function getIfExists(own, rep, bra) {
+  if (own in trees && rep in trees[own]) {
+    if (bra in trees[own][rep]) {
+      return trees[own][rep][bra];
+    }
+  }
+  return null;
+}
+
+function saveTree(own, rep, bra) {
+  if (own in trees) {
+    if (rep in trees[own]) {
+      trees[own][rep][bra] = nodes.value;
+    } else {
+      trees[own][rep] = { [bra]: nodes.value };
+    }
   } else {
-    trees[rep] = { [bra]: nodes.value };
+    trees[own] = { [rep]: { [bra]: nodes.value } };
   }
 }
 
-function changeRef() {
-  axios
-    .post("http://localhost/gettree", {
-      owner: owner.value,
-      branch: selectedBranch.value,
-      repository: selectedRepository.value,
-    })
-    .then(function (response) {
-      nodes.value = response.data;
-      saveTree(selectedRepository.value, selectedBranch.value);
-    }).catch((error) => handleError(error));
+function handleError(error) {
+  if (error.response.status == 401) {
+    location.replace(location.protocol + "//" + location.hostname + "/login");
+  }
 }
-
 </script>

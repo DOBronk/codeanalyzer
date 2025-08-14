@@ -1,0 +1,27 @@
+[
+    {
+        "name": "Laravel CodeAnalyzer",
+        "type": "mysql",
+        "host": "host.docker.internal",
+        "port": "3306",
+        "username": "root",
+        "password": "password",
+        "database": "codeanalyzer" // <-- the database to show in VS Code DevDb view
+    },
+    {
+        "type": "sqlite",
+        "path": "/path/to/database.sqlite"
+    },
+    {
+        "name": "My MSSQL database",
+        "type": "mssql",
+        "host": "localhost",
+        "port": "1433",
+        "username": "sa",
+        "password": "YourPassword123",
+        "database": "master",
+        "options": {
+            "trustServerCertificate": true
+        }
+    }
+]

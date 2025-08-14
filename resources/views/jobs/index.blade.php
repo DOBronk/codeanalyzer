@@ -53,7 +53,7 @@
             <p class="mb-2 text-red-600 font-semibold">{{ __('job.busy') }}</p>
         @else
             <p class="mb-2 text-green-700 font-semibold">{{ __('job.ready') }}</p>
-            <x-button-blue href="{{ route('codeanalyzer.create.step.one') }}"
+            <x-button-blue href="{{ route('codeanalyzer.createjob') }}"
                 type="link">{{ __('job.create') }}</x-button-blue>
         @endcan
     </x-page-container>

@@ -2,52 +2,48 @@
 
 namespace App\Services;
 
-use App\Abstracts\ApiController;
-use App\Services\GitHubApi\GitDatabase;
+use App\Services\GitHubApi\Abstracts\ApiController;
+use App\Services\GitHubApi\GitHub;
 use App\Services\GitHubApi\HttpClient;
+use App\Services\GitHubApi\Settings;
+use Illuminate\Support\Facades\Log;
+
 /**
- * Service die met GitHub REST API communiceert
+ * Service die met GitHub REST API communiceert of configureert
  * 
- * @method App\Services\GithubApi\GitDatabase     gitDatabase()
+ * @method App\Services\GithubApi\GitHub    git()
  * 
  */
 class GithubService
 {
     private $httpClient;
+    private $settings;
+
     public function __construct(string $url, private string $key)
     {
-        $this->httpClient = new HttpClient($this, $url);
+        $this->settings = new Settings($key, $url);
+        $this->httpClient = new HttpClient($this->settings);
     }
-
-    public function setKey(string $key): self
-    {
-        $this->key = $key;
-
-        return $this;
-    }
-
-    public function getKey(): string
-    {
-        return $this->key;
-    }
-
     public function getHttpClient(): HttpClient
     {
         return $this->httpClient;
     }
-    public function github($name): ?ApiController
+    public function getService(): self
     {
-        if ($name === 'gitDatabase' || $name === 'gitDb') {
-            return new GitDatabase($this);
-        }
-        return null;
+        return $this;
     }
-
-    public function gitData(): GitDatabase
+    public function config(): Settings
     {
-        return new GitDatabase($this);
+        return $this->settings;
     }
-
+    public function github($name): ApiController
+    {
+        Log::info("{$name} accessed");
+        return match ($name) {
+            'git' => new GitHub($this),
+            default => null
+        };
+    }
     /**
      * @param string $name
      * @param array  $args

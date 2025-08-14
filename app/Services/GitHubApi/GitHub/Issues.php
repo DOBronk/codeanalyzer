@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services\GitHubApi\GitHubDatabase;
+namespace App\Services\GitHubApi\GitHub;
 
-use App\Abstracts\ApiController;
+use App\Services\GitHubApi\Abstracts\ApiController;
 
 class Issues extends ApiController
 {

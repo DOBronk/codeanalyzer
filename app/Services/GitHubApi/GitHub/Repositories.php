@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services\GitHubApi\GitHubDatabase;
+namespace App\Services\GitHubApi\GitHub;
 
-use App\Abstracts\ApiController;
+use App\Services\GitHubApi\Abstracts\ApiController;
 
 class Repositories extends ApiController
 {
@@ -21,14 +21,14 @@ class Repositories extends ApiController
         return $this->get("/repos/{$owner}/{$repository}/git/trees/{$branch}", ['recursive' => 1])['tree'];
     }
 
-    public function getBranches(string $owner, string $repository): array
-    {
-        return array_column($this->get("/repos/{$owner}/{$repository}/branches"), 'name');
-    }
-
     public function getRepositories(string $owner): array
     {
-        return array_column($this->get("/users/{$owner}/repos"), 'name');
+        $data = $this->get("/users/{$owner}/repos");
+
+        $repositories = array_column($data, 'name');
+        $default_branches = array_column($data, 'default_branch');
+
+        return [$repositories, $default_branches];
     }
 
     public function getRepository(string $owner, string $repository): array

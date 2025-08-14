@@ -1,0 +1,236 @@
+{
+  "/media/dennis/Vertex4/Projects/codeanalyzer/app/Http/Controllers/Auth/ConfirmablePasswordController.php": {
+    "hash": "bda485943308b8e21e667e5f4a287946",
+    "labels": {
+      "auth.password": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/app/Http/Middleware/MandatorySessionKeys.php": {
+    "hash": "9c783d55c8cf717f715aa1c9d5d851b5",
+    "labels": {
+      "messages.sessionmissing": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/app/Http/Requests/Auth/LoginRequest.php": {
+    "hash": "d478d7717dea5587062888b3392ebea3",
+    "labels": {
+      "auth.failed": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/app/Policies/JobPolicy.php": {
+    "hash": "04989bd34392cad88f1f07d4ee556eba",
+    "labels": {
+      "messages.activejob": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/auth/confirm-password.blade.php": {
+    "hash": "3257561582b0f322668ba76a7eefd389",
+    "labels": {
+      "This is a secure area of the application. Please confirm your password before continuing.": 1,
+      "Password": 1,
+      "Confirm": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/auth/forgot-password.blade.php": {
+    "hash": "7187c08d038738c11554cf373ebf0fb6",
+    "labels": {
+      "Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.": 1,
+      "Email": 1,
+      "Email Password Reset Link": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/auth/login.blade.php": {
+    "hash": "9c3cba7055ec61ba4d205ab28bb818f3",
+    "labels": {
+      "Email": 1,
+      "Password": 1,
+      "Remember me": 1,
+      "Forgot your password?": 1,
+      "Log in": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/auth/register.blade.php": {
+    "hash": "1c5d60102b332eaeb489d58aff2bd237",
+    "labels": {
+      "Name": 1,
+      "Email": 1,
+      "Password": 1,
+      "Confirm Password": 1,
+      "Already registered?": 1,
+      "Register": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/auth/reset-password.blade.php": {
+    "hash": "26ea6cc5e943936ca8c60d2d54261961",
+    "labels": {
+      "Email": 1,
+      "Password": 1,
+      "Confirm Password": 1,
+      "Reset Password": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/auth/verify-email.blade.php": {
+    "hash": "8b7eae29acd6e95de267303b8743fbdf",
+    "labels": {
+      "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\\'t receive the email, we will gladly send you another.": 1,
+      "A new verification link has been sent to the email address you provided during registration.": 1,
+      "Resend Verification Email": 1,
+      "Log Out": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/dashboard.blade.php": {
+    "hash": "f0c4c9e3a24ae5a5a5b862382317aa25",
+    "labels": {
+      "Dashboard": 1,
+      "You're logged in!": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/issues/create.blade.php": {
+    "hash": "1a31df8ee79c254885a5164cba1f123e",
+    "labels": {
+      "Issue aanmaken": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/issues/index.blade.php": {
+    "hash": "dc9c8afb2b533324c651975bc59f7d4d",
+    "labels": {
+      "Issues": 1,
+      "Id": 1,
+      "Eigenaar": 1,
+      "Repository": 1,
+      "Branch": 1,
+      "Titel": 1,
+      "Text": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/issues/show.blade.php": {
+    "hash": "278c8cc1708d2193037ad8510c7fd07b",
+    "labels": {
+      "Issue tonen": 1,
+      "Eigenaar": 1,
+      "Repository": 1,
+      "Branch": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/jobs/createjob1.blade.php": {
+    "hash": "4a57e01c7083958b765dcf9ca7ec1e9d",
+    "labels": {
+      "job.createtitle": 1,
+      "job.supplygit": 1,
+      "job.owner": 1,
+      "job.repository": 1,
+      "job.branch": 1,
+      "job.optional": 1,
+      "job.next": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/jobs/createjob2.blade.php": {
+    "hash": "b37f4ce75d05560cad6f10898a7638d2",
+    "labels": {
+      "Job aanmaken": 1,
+      "Selecteer bestanden voor analyse": 1,
+      "job.create": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/jobs/index.blade.php": {
+    "hash": "a59ee4d9bcdba26e956beb19f75541bc",
+    "labels": {
+      "Job": 1,
+      "Aangemaakte jobs": 1,
+      "Id": 1,
+      "Eigenaar": 1,
+      "Repository": 1,
+      "Branch": 1,
+      "Aantal items": 1,
+      "Status": 1,
+      "Acties": 1,
+      "messages.details": 1,
+      "messages.cancel": 1,
+      "job.none": 1,
+      "messages.noapi": 1,
+      "job.busy": 1,
+      "job.ready": 1,
+      "job.create": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/jobs/jobdetails.blade.php": {
+    "hash": "3dad5b47d095c7a0d751960eac81c887",
+    "labels": {
+      "Job details": 1,
+      "Id": 1,
+      "Eigenaar": 1,
+      "Repository": 1,
+      "Branch": 1,
+      "Status": 2,
+      "Bestand": 1,
+      "Resultaat": 1,
+      "Acties": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/layouts/master.blade.php": {
+    "hash": "5d3c34a7e2bb156789d75402bdfef816",
+    "labels": {
+      "Uitloggen": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/layouts/navigation.blade.php": {
+    "hash": "1889cf0a6715898d16ae5b8511b0e013",
+    "labels": {
+      "Dashboard": 2,
+      "Job": 1,
+      "Issues": 1,
+      "Instellingen": 1,
+      "Profile": 2,
+      "Log Out": 2
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/profile/edit.blade.php": {
+    "hash": "2e4b191ad2cde1193849b5ec8a87aba8",
+    "labels": {
+      "Profile": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/profile/partials/delete-user-form.blade.php": {
+    "hash": "a25eb31697fd304c08564761caf78b3d",
+    "labels": {
+      "Delete Account": 3,
+      "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.": 1,
+      "Are you sure you want to delete your account?": 1,
+      "Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.": 1,
+      "Password": 2,
+      "Cancel": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/profile/partials/update-password-form.blade.php": {
+    "hash": "3249c195fce50ee8c31383658684ad22",
+    "labels": {
+      "Update Password": 1,
+      "Ensure your account is using a long, random password to stay secure.": 1,
+      "Current Password": 1,
+      "New Password": 1,
+      "Confirm Password": 1,
+      "Save": 1,
+      "Saved.": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/profile/partials/update-profile-information-form.blade.php": {
+    "hash": "46bebd3629d44f2c7d6b5961544aee73",
+    "labels": {
+      "Profile Information": 1,
+      "Update your account's profile information and email address.": 1,
+      "Name": 1,
+      "Email": 1,
+      "Your email address is unverified.": 1,
+      "Click here to re-send the verification email.": 1,
+      "A new verification link has been sent to your email address.": 1,
+      "Save": 1,
+      "Saved.": 1
+    }
+  },
+  "/media/dennis/Vertex4/Projects/codeanalyzer/resources/views/settings/index.blade.php": {
+    "hash": "a9025812396020707277ad06b864ecb3",
+    "labels": {
+      "Instellingen": 1
+    }
+  }
+}

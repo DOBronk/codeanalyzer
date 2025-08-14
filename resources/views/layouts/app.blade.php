@@ -14,7 +14,7 @@
 
         @isset($loadVue) 
         <!-- Alleen vue, inertia en alle andere vue modules laden wanneer nodig --> 
-            @vite(['resources/css/app.css', 'resources/js/app.js','resources/js/inertiavue.js']) 
+            @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/inertiavue.js']) 
             @inertiaHead 
         @else
         <!-- Scripts -->

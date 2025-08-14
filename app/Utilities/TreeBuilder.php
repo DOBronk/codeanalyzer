@@ -40,7 +40,7 @@ class TreeBuilder
         return $tree;
     }
 
-    public static function buildTree5(array $items): array
+    public static function buildNodes(array $items): array
     {
         $tree = [];
 

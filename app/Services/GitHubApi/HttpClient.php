@@ -4,29 +4,33 @@ namespace App\Services\GitHubApi;
 
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-use App\Services\GithubService;
+use app\Services\GitHubApi\Contracts\ApiSettingsInterface;
 use App\Exceptions\AuthorizationException;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Facades\Log;
 
 // Laravel HTTP Client Handler, in toekomst misschien interface met adapter design pattern 
 // toevoegen om composer package van te maken die op andere HTTP clients kan werken)
 class HttpClient
 {
-    // Parent voor ophalen key (kan tussentijds wijzigen)
-    private $service;
+    private $settings;
     private $headers = [];
 
-    public function __construct(GitHubService $git, private string $url)
+    public function __construct(ApiSettingsInterface $settings)
     {
-        $this->service = $git;
+        $this->settings = $settings;
     }
     public function get(string $uri, array|string|null $query = null)
     {
-        return $this->handleResponse($this->prepareClient()->get("{$this->url}$uri", $query));
+        Log::info("Get url", ['url' => "{$this->settings->getUrl()}{$uri}"]);
+
+        return $this->handleResponse($this->prepareClient()->get("{$this->settings->getUrl()}{$uri}", $query));
     }
     public function post(string $uri, array $data = [])
     {
-        return $this->handleResponse($this->prepareClient()->post("{$this->url}$uri", $data));
+        Log::info("Posted data", ['url' => "{$this->settings->getUrl()}{$uri}"]);
+
+        return $this->handleResponse($this->prepareClient()->post("{$this->settings->getUrl()}{$uri}", $data));
     }
     private function handleResponse(Response $response)
     {
@@ -38,6 +42,6 @@ class HttpClient
     }
     private function prepareClient(): PendingRequest
     {
-        return Http::withToken($this->service->getKey());
+        return Http::withToken($this->settings->getKey());
     }
 }

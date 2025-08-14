@@ -28,13 +28,12 @@ class SendBrokerQueueJob implements ShouldQueue
     public function handle(GithubService $git, MessageBroker $broker): void
     {
         try {
-            $tasks = [];
-            $git->gitDatabase()->repositories()->setRepositoryArray($this->userjob->toArray());
-            $git->setApi($this->userjob->load(['user'])->user->settings->gh_api_key);
+            [$owner, $repository, $tasks] = [$this->userjob->owner, $this->userjob->repository, []];
+            $git->config()->setKey($this->userjob->load(['user'])->user->settings->gh_api_key);
 
-            $this->userjob->items()->each(function ($item) use ($git, &$tasks) {
-                $code = $git->gitDatabase()->blobs()->getBlob($item->sha);
-                $tasks[] = JobDTO::make($item, $code)->toJson();
+            $this->userjob->items()->each(function ($item) use ($git, $owner, $repository, &$tasks) {
+                $code = $git->git()->blobs()->getBlob($item->sha, $owner, $repository);
+                $tasks[] = JobDTO::make($this->userjob->id, $this->userjob->user->id, $item->id, $code)->toJson();
             }, 100);
 
             $broker->addJobs($tasks);
