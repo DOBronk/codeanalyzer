@@ -12,10 +12,6 @@ abstract class ApiController
     {
         return $this->git;
     }
-    public function config(): self
-    {
-        return $this;
-    }
     public function get(string $uri, array|string|null $query = null)
     {
         return $this->http()->get($uri, $query);

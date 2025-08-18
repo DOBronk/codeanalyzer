@@ -3,43 +3,41 @@
 namespace App\Services;
 
 use App\Services\GitHubApi\Abstracts\ApiController;
-use App\Services\GitHubApi\GitHub;
-use App\Services\GitHubApi\HttpClient;
-use App\Services\GitHubApi\Settings;
-use Illuminate\Support\Facades\Log;
+use App\Services\GitHubApi\Branches\Branches;
+use App\Services\GitHubApi\GitData;
+use App\Services\GitHubApi\Http\Modules\EtagCache;
+use App\Services\GitHubApi\Issues\Issues;
+use App\Services\GitHubApi\Repositories\Repositories;
+use App\Services\GitHubApi\Traits\HasSettings;
+use App\Services\GitHubApi\Traits\HttpClientBuilder;
 
 /**
  * Service die met GitHub REST API communiceert of configureert
  * 
- * @method App\Services\GithubApi\GitHub    git()
- * 
+ * @method App\Services\GithubApi\GitData                   data()
+ * @method App\Services\GithubApi\GitData                   gitdata()
+ * @method App\Services\GithubApi\Branches\Branches         branches()
+ * @method App\Services\GithubApi\Issues\Issues             issues()
+ * @method App\Services\GithubApi\Repositories\Repositories repositories()
  */
 class GithubService
 {
-    private $httpClient;
-    private $settings;
-
-    public function __construct(string $url, private string $key)
+    use HasSettings, HttpClientBuilder;
+    public function __construct(string $url, string $key)
     {
-        $this->settings = new Settings($key, $url);
-        $this->httpClient = new HttpClient($this->settings);
-    }
-    public function getHttpClient(): HttpClient
-    {
-        return $this->httpClient;
+        $this->constructClient($key, $url, new EtagCache($key));
     }
     public function getService(): self
     {
         return $this;
     }
-    public function config(): Settings
-    {
-        return $this->settings;
-    }
-    public function github($name): ApiController
+    public function github($name): ?ApiController
     {
         return match ($name) {
-            'git' => new GitHub($this),
+            'data', 'gitdata' => new GitData($this),
+            'branches', 'branch' => new Branches($this),
+            'repositories', 'repos' => new Repositories($this),
+            'issues', 'issue' => new Issues($this),
             default => null
         };
     }

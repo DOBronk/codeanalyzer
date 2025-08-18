@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\GitHubApi\GitHub;
+namespace App\Services\GitHubApi\GitData;
 
 use App\Services\GitHubApi\Abstracts\ApiController;
 
