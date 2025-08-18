@@ -10,9 +10,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Models\Job;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
@@ -34,9 +31,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('can:view,job')
         ->name('codeanalyzer.job');
     Route::get('/', fn() => view('jobs.index', ['items' => Job::with('items')->orderByDesc('created_at')->currentUser()->paginate(10)]))->name('codeanalyzer.index');
-    Route::get('/te', function () {
-        return Job::first()->load(relations: ['items'])->user->settings->gh_api_key;
-    });
 
     // Create issue
     Route::middleware(['can:create,jobitem', 'can:hasAPI,App\Models\User'])->group(function (): void {
