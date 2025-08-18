@@ -16,9 +16,6 @@ class GetRepositoriesController extends Controller
     {
         $request->validate(['owner' => 'required|string|max:39']); // 39 character limit by GitHub
 
-        if ($request->getMethod() === "GET") {
-            return $git->repositories()->getRepositories('dobronk');
-        }
         return $git->repositories()->getRepositories($request['owner']);
     }
 }
