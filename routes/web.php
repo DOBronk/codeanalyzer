@@ -47,9 +47,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     route::post('/settings', [SettingsController::class, 'store'])->name('codeanalyzer.postsettings');
 
     // AJAX routes for Vue Repository Treeviewer component
-    Route::post('/gettree', GetRepositoryTreeController::class);
-    Route::post('/getrepositories', GetRepositoriesController::class);
-    Route::post('/getbranches', GetBranchesController::class);
+    Route::post('/gettree', GetRepositoryTreeController::class)->name('ajax.gettree');
+    Route::post('/getrepositories', GetRepositoriesController::class)->name('ajax.getrepositories');
+    Route::post('/getbranches', GetBranchesController::class)->name('ajax.getbranches');
 });
 
 require __DIR__ . '/auth.php';
