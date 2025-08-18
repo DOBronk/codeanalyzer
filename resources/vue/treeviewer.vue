@@ -86,7 +86,6 @@ import TreeTable from "primevue/treetable";
 import Column from "primevue/column";
 import _debounce from "lodash/debounce";
 import { ref, watch, computed } from "vue";
-import axios from "axios";
 
 const props = defineProps(["csrf", "owner", "route"]);
 
@@ -150,6 +149,7 @@ function changeBranch() {
 function getRepositories(ownerRepo) {
     nodes.value = null;
     repositories.value = null;
+    branches.value = [];
 
     axios
         .post("/getrepositories", { owner: ownerRepo })
