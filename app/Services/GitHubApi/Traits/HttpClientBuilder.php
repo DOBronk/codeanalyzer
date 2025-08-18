@@ -12,7 +12,7 @@ trait HttpClientBuilder
     protected $modules = [];
     protected function setHttpClient()
     {
-        if (!isset($this->settingsChanged) || $this->settingsChanged) {
+        if ($this->settingsChanged ?? true) {
             $this->settingsChanged = false;
             $this->httpClient = new HttpClient($this->url, $this->key);
         }
