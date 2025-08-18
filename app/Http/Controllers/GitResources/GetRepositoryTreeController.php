@@ -21,7 +21,7 @@ class GetRepositoryTreeController extends Controller
             'branch' => 'required|string|max:250'       // 250 character limit with UTF-8 encoding (lower with other)
         ]);
 
-        $items = $git->git()->trees()->getTree($args);
+        $items = $git->data()->trees()->getTree($args);
 
         return TreeBuilder::buildNodes($items);
     }

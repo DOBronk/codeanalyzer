@@ -5,7 +5,7 @@ namespace App\Http\Controllers\GitResources;
 use App\Services\GithubService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Log;
+
 
 class GetRepositoriesController extends Controller
 {
@@ -16,6 +16,9 @@ class GetRepositoriesController extends Controller
     {
         $request->validate(['owner' => 'required|string|max:39']); // 39 character limit by GitHub
 
-        return $git->git()->repositories()->getRepositories($request->owner);
+        if ($request->getMethod() === "GET") {
+            return $git->repositories()->getRepositories('dobronk');
+        }
+        return $git->repositories()->getRepositories($request['owner']);
     }
 }
