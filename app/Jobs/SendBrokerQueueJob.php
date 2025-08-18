@@ -29,10 +29,10 @@ class SendBrokerQueueJob implements ShouldQueue
     {
         try {
             [$owner, $repository, $tasks] = [$this->userjob->owner, $this->userjob->repository, []];
-            $git->config()->setKey($this->userjob->load(['user'])->user->settings->gh_api_key);
+            $git->apiKey = $this->userjob->load(['user'])->user->settings->gh_api_key;
 
             $this->userjob->items()->each(function ($item) use ($git, $owner, $repository, &$tasks) {
-                $code = $git->git()->blobs()->getBlob($item->sha, $owner, $repository);
+                $code = $git->data()->blobs()->getBlob($item->sha, $owner, $repository);
                 $tasks[] = JobDTO::make($this->userjob->id, $this->userjob->user->id, $item->id, $code)->toJson();
             }, 100);
 
