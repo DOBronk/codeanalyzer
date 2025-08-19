@@ -16,4 +16,5 @@ return [
     'busy' => 'There is still a job on hold, you can\'t create new jobs',
     'ready' => 'There are no active jobs, you can add a new job',
     'create' => 'Create job',
+    'createfailed' => "Couldn't create job"
 ];

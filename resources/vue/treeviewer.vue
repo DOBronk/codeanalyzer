@@ -1,5 +1,8 @@
 <template>
     <div class="card max-w-7xl">
+        <Message v-if="error" severity="error" class="mb-5">
+            {{ error[0] }}
+        </Message>
         <form :action="route" method="post">
             <Panel header="Gegevens">
                 <div class="flex items-center justify-center">
@@ -87,7 +90,7 @@ import Column from "primevue/column";
 import _debounce from "lodash/debounce";
 import { ref, watch, computed } from "vue";
 
-const props = defineProps(["csrf", "owner", "route"]);
+const props = defineProps(["csrf", "owner", "route", "error"]);
 
 const nodes = ref(null);
 const branches = ref([null]);

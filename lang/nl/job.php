@@ -16,4 +16,5 @@ return [
     'busy' => 'Er staat nog een job in de wacht, u kunt geen nieuwe jobs aanmaken',
     'ready' => 'Er zijn geen actieve jobs, u kunt een nieuwe job toevoegen',
     'create' => 'Job aanmaken',
+    'createfailed' => 'Kon job niet aanmaken'
 ];

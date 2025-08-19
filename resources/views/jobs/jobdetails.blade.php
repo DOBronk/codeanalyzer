@@ -7,7 +7,6 @@
 
     <x-page-container>
         <x-message :message="Session('message')" />
-
         <p class="mb-2 font-semibold">{{ __('Job') }}:</p>
         <div class="overflow-x-auto mb-6">
             <x-data-table :headers="[__('Id'), __('Eigenaar'), __('Repository'), __('Branch'), __('Status')]">
@@ -16,7 +15,7 @@
                 </x-row-table>
             </x-data-table>
         </div>
-
+     
         <p class="mb-2 font-semibold"> {{ __('Items')}}</p>
         <div class="overflow-x-auto">
             <x-data-table :headers="[__('Bestand'), __('Status'), __('Resultaat'), __('Acties')]">

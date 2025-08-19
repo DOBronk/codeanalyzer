@@ -6,6 +6,8 @@
     </x-slot>
 
     <x-page-container>
+                <x-message :message="Session('trouble')"  error="true" />
+    
         @if ($items->count() > 0)
             <p class="mb-4 text-lg font-semibold">{{ __('Aangemaakte jobs')  }}:</p>
             <div class="overflow-x-auto">

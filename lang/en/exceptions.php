@@ -12,5 +12,6 @@ return [
     'conflict' =>  'conflict',
     'issues_disabled' => 'Issues are disabled for this repository',
     'validation' => 'Validation error!',
-    'unknown' => 'Unknown status code'
+    'unknown' => 'Unknown status code',
+    'unspecified' => 'Unspecified'
 ];

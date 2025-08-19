@@ -12,5 +12,6 @@ return [
     'conflict' =>  'conflict',
     'issues_disabled' => 'Issues zijn uitgeschakeld voor deze repository',
     'validation' => 'Validatie fout',
-    'unknown' => 'Onbekende status code'
+    'unknown' => 'Onbekende status code',
+    'unspecified' => 'Niet gespecificeerd'
 ];
