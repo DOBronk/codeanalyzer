@@ -3,6 +3,7 @@
 namespace App\Services\GitHubApi\Http;
 
 use App\Services\GitHubApi\Contracts\HttpModuleInterface;
+use App\Services\GitHubApi\Abstracts\HttpModule;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Log;
@@ -16,10 +17,9 @@ class HttpClient
 {
     use GlobalSettings;
 
-    // Voor nu puur implementatie GuzzleHttp van Laravel
     private $middleware = ['request' => [], 'response' => []];
 
-    public function __construct(array|HttpModuleInterface|null $modules = null)
+    public function __construct(array|HttpModule|null $modules = null)
     {
         if (isset($modules)) {
             if (is_array($modules)) {
@@ -33,28 +33,21 @@ class HttpClient
     }
     public function get(string $uri, array|string|null $query = null)
     {
-        Log::info("Get url", ['url' => "{$this->baseUrl}{$uri}"]);
-
         return $this->prepareClient($uri)->get("{$uri}", $query);
     }
     public function post(string $uri, array $data = [])
     {
-        Log::info("Posted data", ['url' => "{$this->baseUrl}{$uri}"]);
-
         return $this->prepareClient($uri)->post("{$uri}", $data);
     }
-    public function addModule(HttpModuleInterface $mod)
+    public function addModule(HttpModule $mod)
     {
-        $name = get_class($mod);
-        $this->middleware['request'][$name] = $mod->getRequestHandler();
-        $this->middleware['response'][$name] = $mod->getResponseHandler();
+        $this->middleware = array_merge($this->middleware, $mod->getHandlers());
     }
 
-    public function deleteModule(string|HttpModuleInterface $mod)
+    public function deleteModule(string|HttpModule $mod)
     {
-        $name = ($mod instanceof HttpModuleInterface) ? get_class($mod) : $mod;
-        unset($this->middleware['response'][$name]);
-        unset($this->middleware['request'][$name]);
+        $name = ($mod instanceof HttpModule) ? $mod->className : $mod;
+        unset($this->middleware['response'][$name], $this->middleware['request'][$name]);
     }
     private function callAllMiddlewhere(RequestInterface|ResponseInterface $param, ?string $url)
     {
