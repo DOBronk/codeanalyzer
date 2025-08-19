@@ -131,10 +131,7 @@ function changeBranch() {
 
     if (!branches.value[index]) {
         axios
-            .post("/getbranches", {
-                owner: owner.value,
-                repository: repositories.value[index],
-            })
+            .get("/getbranches/" + owner.value + "/" + repositories.value[index])
             .then((response) => {
                 branches.value[index] = response.data;
                 branchOptions.value = branches.value[index];

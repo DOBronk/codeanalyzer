@@ -49,7 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // AJAX routes for Vue Repository Treeviewer component
     Route::post('/gettree', GetRepositoryTreeController::class)->name('ajax.gettree');
     Route::post('/getrepositories', GetRepositoriesController::class)->name('ajax.getrepositories');
-    Route::post('/getbranches', GetBranchesController::class)->name('ajax.getbranches');
+    Route::get('/getbranches/{owner}/{repo}', GetBranchesController::class)->name('ajax.getbranches');
 });
 
 require __DIR__ . '/auth.php';

@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers\GitResources;
 
-use App\Http\Requests\GetBranchesRequest;
+use Illuminate\Http\Request;
 use App\Services\GithubService;
 use App\Http\Controllers\Controller;
+
 class GetBranchesController extends Controller
 {
     /**
      *  List all branches from repository
      */
-    public function __invoke(GetBranchesRequest $request, GithubService $git)
+    public function __invoke(Request $request, string $owner, string $repo, GithubService $git)
     {
-        return $git->branches()->getBranches($request['owner'], $request['repository']);
+        return $git->branches()->getBranches($owner, $repo);
     }
 }
