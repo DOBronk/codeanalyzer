@@ -7,7 +7,6 @@ use App\Events\BrokerQueueError;
 use App\Models\Job;
 use App\Models\User;
 use App\Services\GithubService;
-use App\Interfaces\IGithubService;
 use App\Services\MessageBroker;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -28,9 +27,10 @@ class SendBrokerQueueJob implements ShouldQueue
     public function handle(GithubService $git, MessageBroker $broker): void
     {
         try {
-            [$owner, $repository, $tasks] = [$this->userjob->owner, $this->userjob->repository, []];
-            $git->apiKey = $this->userjob->load(['user'])->user->settings->gh_api_key;
-
+            [$owner, $repository, $user, $tasks] = [$this->userjob->owner, $this->userjob->repository, $this->userjob->load(['user'])->user, []];
+            $git->apiKey = $this->userjob->user->settings->gh_api_key;
+            Log::info(sprintf("Key:%s\tModel: %s", $git->apiKey, print_r($this->userjob->user, true)));
+            Log::info(sprintf("Key:%s\tModel2: %s", $this->userjob->user->settings->gh_api_key, print_r($this->userjob->load(['user'])->user, true)));
             $this->userjob->items()->each(function ($item) use ($git, $owner, $repository, &$tasks) {
                 $code = $git->data()->blobs()->getBlob($item->sha, $owner, $repository);
                 $tasks[] = JobDTO::make($this->userjob->id, $this->userjob->user->id, $item->id, $code)->toJson();
@@ -38,8 +38,8 @@ class SendBrokerQueueJob implements ShouldQueue
 
             $broker->addJobs($tasks);
         } catch (\Exception $e) {
-            Log::critical("Array omzetten", $this->userjob->toArray());
-            BrokerQueueError::dispatch($this->userjob, $e->getMessage() . ' ' . $e->getLine() . ' ' . $e->getFile() . ' ' . $e->getTraceAsString() . "  :  ", $this->userjob->load(['user'])->user);
+            report($e);
+            BrokerQueueError::dispatch($this->userjob, $user);
         }
     }
 }

@@ -16,9 +16,9 @@ class JobErrorMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct(public Job $job, public string $error)
+    public function __construct(public Job $job, public ?string $error)
     {
-        //
+        $this->error ??= trans("exceptions.unspecified");
     }
 
     /**

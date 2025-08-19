@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Services\GithubService;
 use App\Services\RabbitMqBroker;
@@ -45,5 +46,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
+        Model::preventLazyLoading(true);
+        Model::handleLazyLoadingViolationUsing(function ($model, $relation) {
+            report(new \Exception("lazy loaded $model on relation $relation"));
+            abort(404);
+        });
     }
 }

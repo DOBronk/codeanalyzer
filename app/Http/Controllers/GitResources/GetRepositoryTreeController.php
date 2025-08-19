@@ -6,7 +6,6 @@ use App\Services\GithubService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Utilities\TreeBuilder;
-use Illuminate\Support\Facades\Log;
 
 class GetRepositoryTreeController extends Controller
 {

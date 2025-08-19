@@ -16,7 +16,7 @@ class BrokerQueueError
     /**
      * Create a new event instance.
      */
-    public function __construct(public Job $job, public string $error, public User $user)
+    public function __construct(public Job $job, public User $user, public ?string $error = null)
     {
         //
     }

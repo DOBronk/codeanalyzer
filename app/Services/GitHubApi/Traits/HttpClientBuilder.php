@@ -8,7 +8,6 @@ use App\Services\GitHubApi\Abstracts\HttpModule;
 trait HttpClientBuilder
 {
     protected $httpClient;
-    protected $settingsChanged;
     protected $modules = [];
     protected function setHttpClient()
     {

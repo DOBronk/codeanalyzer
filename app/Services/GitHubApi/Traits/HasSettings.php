@@ -10,11 +10,15 @@ trait HasSettings
 
     public string $apiKey {
         get => $this->key;
-        set => $this->setValue($value);
+        set {
+            $this->key = $this->setValue($value);
+        }
     }
     public string $baseUrl {
         get => $this->url;
-        set => $this->setValue($value);
+        set {
+            $this->url = $this->setValue($value);
+        }
     }
     private function setValue(string $value)
     {

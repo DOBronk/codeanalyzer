@@ -3,6 +3,7 @@
 namespace App\Services\GitHubApi\GitData;
 
 use App\Services\GitHubApi\Abstracts\ApiController;
+use Illuminate\Support\Facades\Log;
 
 class Blobs extends ApiController
 {
@@ -14,7 +15,7 @@ class Blobs extends ApiController
     public function getBlob(string $sha, string $owner, string $repository): string
     {
         $response = $this->get("/repos/{$owner}/{$repository}/git/blobs/{$sha}");
-
+        // Log::info(print_r($response, true));
         return base64_decode($response['content']);
     }
     /**
