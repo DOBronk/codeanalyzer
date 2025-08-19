@@ -2,7 +2,7 @@
 
 namespace App\Services\GitHubApi\Http\Modules;
 
-use App\Services\GitHubApi\Traits\HasSettings;
+use App\Services\GitHubApi\Traits\GlobalSettings;
 use App\Services\GitHubApi\Abstracts\HttpModule;
 use Illuminate\Support\Facades\Log;
 use Psr\Http\Message\RequestInterface;
@@ -12,13 +12,9 @@ use GuzzleHttp\Psr7;
 
 class EtagCache extends HttpModule
 {
-    use HasSettings;
+    use GlobalSettings;
     private const CACHE_EXPIRE = (3600 * 24 * 7); // Keep cache for 1 week
 
-    public function __construct(string $key)
-    {
-        $this->key = $key;
-    }
     public function handleRequest(RequestInterface $request, $url)
     {
         $key = $this->genKey($url);
@@ -57,6 +53,6 @@ class EtagCache extends HttpModule
 
     private function genKey(string $url)
     {
-        return "{$this->key}{$url}";
+        return "{$this->apiKey}{$url}";
     }
 }

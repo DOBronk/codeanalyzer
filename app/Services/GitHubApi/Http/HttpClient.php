@@ -8,65 +8,54 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Log;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\RequestInterface;
-use App\Services\GitHubApi\Traits\HasSettings;
+use App\Services\GitHubApi\Traits\GlobalSettings;
 
 // Laravel HTTP Client Handler, in toekomst misschien interface met adapter design pattern 
 // toevoegen om composer package van te maken die op andere HTTP clients kan werken)
 class HttpClient
 {
-    use HasSettings;
+    use GlobalSettings;
 
     // Voor nu puur implementatie GuzzleHttp van Laravel
     private $middleware = ['request' => [], 'response' => []];
 
-    public function __construct(string $url, string $key)
+    public function __construct(array|HttpModuleInterface|null $modules = null)
     {
-        $this->key = $key;
-        $this->url = $url;
+        if (isset($modules)) {
+            if (is_array($modules)) {
+                foreach ($modules as $module) {
+                    $this->addModule($module);
+                }
+            } else {
+                $this->addModule($modules);
+            }
+        }
     }
     public function get(string $uri, array|string|null $query = null)
     {
-        Log::info("Get url", ['url' => "{$this->url}{$uri}"]);
+        Log::info("Get url", ['url' => "{$this->baseUrl}{$uri}"]);
 
         return $this->prepareClient($uri)->get("{$uri}", $query);
     }
     public function post(string $uri, array $data = [])
     {
-        Log::info("Posted data", ['url' => "{$this->url}{$uri}"]);
+        Log::info("Posted data", ['url' => "{$this->baseUrl}{$uri}"]);
 
         return $this->prepareClient($uri)->post("{$uri}", $data);
     }
     public function addModule(HttpModuleInterface $mod)
     {
-        $this->addRequestHandler($mod->getRequestHandler(), get_class($mod));
-        $this->addResponseHandler($mod->getResponseHandler(), get_class($mod));
+        $name = get_class($mod);
+        $this->middleware['request'][$name] = $mod->getRequestHandler();
+        $this->middleware['response'][$name] = $mod->getResponseHandler();
     }
 
-    public function deleteModule(string $mod)
+    public function deleteModule(string|HttpModuleInterface $mod)
     {
-        $this->deleteRequestHandler($mod);
-        $this->deleteResponseHandler($mod);
-    }
-    public function addRequestHandler(callable $handler, string $name)
-    {
-        $this->middleware['request'][$name] = $handler;
-    }
-
-    public function addResponseHandler(callable $handler, string $name)
-    {
-        $this->middleware['response'][$name] = $handler;
-    }
-
-    public function deleteRequestHandler(string $name)
-    {
+        $name = ($mod instanceof HttpModuleInterface) ? get_class($mod) : $mod;
+        unset($this->middleware['response'][$name]);
         unset($this->middleware['request'][$name]);
     }
-
-    public function deleteResponseHandler(string $name)
-    {
-        unset($this->middleware['response'][$name]);
-    }
-
     private function callAllMiddlewhere(RequestInterface|ResponseInterface $param, ?string $url)
     {
         $mw = $param instanceof RequestInterface ? 'request' : 'response';
@@ -79,12 +68,12 @@ class HttpClient
     }
     private function prepareClient(string $url): PendingRequest
     {
-        return Http::withToken($this->key)
+        return Http::withToken($this->apiKey)
             ->withRequestMiddleware(function (RequestInterface $param) use ($url) {
                 return $this->callAllMiddlewhere($param, $url);
             })
             ->withResponseMiddleware(function (ResponseInterface $param) use ($url) {
                 return $this->callAllMiddlewhere($param, $url);
-            })->baseUrl($this->url);
+            })->baseUrl($this->baseUrl);
     }
 }

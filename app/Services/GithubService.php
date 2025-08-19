@@ -8,9 +8,8 @@ use App\Services\GitHubApi\GitData;
 use App\Services\GitHubApi\Http\Modules\EtagCache;
 use App\Services\GitHubApi\Issues\Issues;
 use App\Services\GitHubApi\Repositories\Repositories;
-use App\Services\GitHubApi\Traits\HasSettings;
-use App\Services\GitHubApi\Traits\HttpClientBuilder;
-
+use App\Services\GitHubApi\Traits\GlobalSettings;
+use App\Services\GitHubApi\Http\HttpClient;
 /**
  * Service die met GitHub REST API communiceert of configureert
  * 
@@ -22,14 +21,21 @@ use App\Services\GitHubApi\Traits\HttpClientBuilder;
  */
 class GithubService
 {
-    use HasSettings, HttpClientBuilder;
+    use GlobalSettings;
+    private $httpClient;
     public function __construct(string $url, string $key)
     {
-        $this->constructClient($key, $url, new EtagCache($key));
+        $this->apiKey = $key;
+        $this->baseUrl = $url;
+        $this->httpClient = new httpClient( new EtagCache());
     }
     public function getService(): self
     {
         return $this;
+    }
+    public function getHttpClient(): HttpClient
+    {
+        return $this->httpClient;
     }
     public function github($name): ?ApiController
     {

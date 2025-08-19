@@ -8,21 +8,24 @@ use Psr\Http\Message\ResponseInterface;
 
 abstract class HttpModule implements HttpModuleInterface
 {
-    protected $requestHandle;
-    protected $responseHandle;
+    protected $requestHandle = "handleRequest";
+    protected $responseHandle = "handleResponse";
+
+    private function getHandler(string $handle): ?callable
+    {
+        if (method_exists($this, $handle)) {
+            return [$this, $handle];
+        }
+        return null;
+    }
     public function getResponseHandler(): callable
     {
-        if (method_exists($this, $responseHandle ?? "handleResponse")) {
-            return [$this, $responseHandle ?? 'handleResponse'];
-        }
-
-        return fn(ResponseInterface $response) => $response;
+        return $this->getHandler($this->responseHandle)
+            ?? fn(ResponseInterface $response) => $response;
     }
     public function getRequestHandler(): callable
     {
-        if (method_exists($this, $requestHandle ?? 'handleRequest')) {
-            return [$this, $requestHandle ?? 'handleRequest'];
-        }
-        return fn(RequestInterface $request) => $request;
+        return $this->getHandler($this->requestHandle)
+            ?? fn(RequestInterface $request) => $request;
     }
 }
