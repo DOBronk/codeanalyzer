@@ -13,7 +13,12 @@ use GuzzleHttp\Psr7;
 class EtagCache extends HttpModule
 {
     use GlobalSettings;
-    private const CACHE_EXPIRE = config('services.github.etag_timeout', 3600 * 24  * 7); // Default 1 week (dev mode)
+    private $cache_expire;
+
+    public function __construct()
+    {
+        $this->cache_expire = config('services.github.etag_timeout', 3600 * 24  * 7); // Default 1 week (dev mode) ;
+    }
     public function handleRequest(RequestInterface $request, $url)
     {
         $key = $this->genKey($url);
@@ -42,8 +47,8 @@ class EtagCache extends HttpModule
                 if (Cache::has($this->genKey($url))) {
                     Cache::forget(Cache::get($this->genKey($url)));
                 }
-                Cache::put($etag, $cached, self::CACHE_EXPIRE + 30); // Keep value data 30 seconds longer for request
-                Cache::put($this->genKey($url), $etag, self::CACHE_EXPIRE);
+                Cache::put($etag, $cached, $this->cache_expire + 30); // Keep value data 30 seconds longer for request
+                Cache::put($this->genKey($url), $etag, $this->cache_expire);
             } else if ($status === 304) {
                 // Something has gone completely wrong, etag is in cache but the response not
                 Log::error("Etag module: Key: $etag in cache, but result not. Nothing to serve!");
