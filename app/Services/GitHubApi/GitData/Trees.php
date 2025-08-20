@@ -14,7 +14,7 @@ class Trees extends ApiController
      * @param  string  $sha  Branch name or SHA for branch
      * @return array Returns an array with filepath as key and corresponding SHA
      */
-    public function getTree(array $array, string $extension = ".php"): array
+    public function getTree(array $array): array
     {
         [$owner, $repository, $branch] = [$array['owner'], $array['repository'], $array['branch']];
 

@@ -33,11 +33,11 @@ class HttpClient
     }
     public function get(string $uri, array|string|null $query = null)
     {
-        return $this->prepareClient($uri)->get("{$uri}", $query);
+        return $this->prepareClient($uri)->get($uri, $query);
     }
     public function post(string $uri, array $data = [])
     {
-        return $this->prepareClient($uri)->post("{$uri}", $data);
+        return $this->prepareClient($uri)->post($uri, $data);
     }
     public function addModule(HttpModule $mod)
     {
