@@ -8,15 +8,15 @@ abstract class ApiController
 {
     public function __construct(private GitHubService $git) {}
 
-    public function getService(): GithubService
+    protected function getService(): GithubService
     {
         return $this->git;
     }
-    public function get(string $uri, array|string|null $query = null)
+    protected function get(string $uri, array|string|null $query = null)
     {
         return $this->http()->get($uri, $query);
     }
-    public function post(string $uri, array $data = [])
+    protected function post(string $uri, array $data = [])
     {
         return $this->http()->post($uri, $data);
     }
