@@ -18,16 +18,4 @@ class Blobs extends ApiController
         // Log::info(print_r($response, true));
         return base64_decode($response['content']);
     }
-    /**
-     * Get an array of blobs from an array of SHA keys
-     * 
-     * @param array<string> $sha_array
-     * @param string $owner
-     * @param string $repo
-     * @return array<string>
-     */
-    public function getBlobs(array $sha_array, string $owner, string $repo): array
-    {
-        return array_map(fn($sha) => $this->getBlob($sha, $owner, $repo), $sha_array);
-    }
 }

@@ -17,7 +17,12 @@ class Trees extends ApiController
     public function getTree(array $array): array
     {
         [$owner, $repository, $branch] = [$array['owner'], $array['repository'], $array['branch']];
+        $response = $this->get("/repos/{$owner}/{$repository}/git/trees/{$branch}", ['recursive' => 1])->json();
 
-        return $this->get("/repos/{$owner}/{$repository}/git/trees/{$branch}", ['recursive' => 1])['tree'];
+        if (is_array($response) && key_exists('tree', $response)) {
+            return $response['tree'];
+        }
+
+        abort(404);
     }
 }
