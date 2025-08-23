@@ -6,10 +6,12 @@ use App\Services\GitHubApi\Abstracts\ApiController;
 use App\Services\GitHubApi\Branches\Branches;
 use App\Services\GitHubApi\GitData;
 use App\Services\GitHubApi\Http\Modules\EtagCache;
+use App\Services\GitHubApi\Http\Modules\Paginator;
 use App\Services\GitHubApi\Issues\Issues;
 use App\Services\GitHubApi\Repositories\Repositories;
 use App\Services\GitHubApi\Traits\GlobalSettings;
 use App\Services\GitHubApi\Http\HttpClient;
+
 /**
  * Service die met GitHub REST API communiceert of configureert
  * 
@@ -27,7 +29,10 @@ class GithubService
     {
         $this->apiKey = $key;
         $this->baseUrl = $url;
-        $this->httpClient = new httpClient( new EtagCache());
+        $this->httpClient = new httpClient();
+        // Important! Load the cache module first
+        $this->httpClient->addModule(new EtagCache());
+        $this->httpClient->addModule(new Paginator($this->httpClient));
     }
     public function getService(): self
     {
