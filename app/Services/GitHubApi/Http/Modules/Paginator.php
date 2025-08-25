@@ -41,7 +41,7 @@ class Paginator extends HttpModule implements HandlesResponse
     // Workaround for if response is an etag match and cached result
     private function makeHeader($response, string $url)
     {
-        if ($response->hasHeader('link') || !str_contains($url, 'page')) {
+        if ($response->hasHeader('link') || !str_contains($url, 'page=') || $response->getStatusCode() !== 304) {
             return $response;
         }
 
