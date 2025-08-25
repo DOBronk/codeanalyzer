@@ -8,7 +8,7 @@ class Repositories extends ApiController
 {
     public function getRepositories(string $owner)
     {
-        $data = $this->get("/users/{$owner}/repos")->json();
+        $data = $this->get("/users/{$owner}/repos", ['per_page' => 50, 'page' => 1])->json();
 
         $repositories = array_column($data, 'name');
         $default_branches = array_column($data, 'default_branch');

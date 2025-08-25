@@ -9,6 +9,7 @@ use Illuminate\Http\Client\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\RequestInterface;
 use App\Services\GitHubApi\Traits\GlobalSettings;
+
 // Laravel HTTP Client Handler, in toekomst misschien interface met adapter design pattern 
 // toevoegen om composer package van te maken die op andere HTTP clients kan werken)
 class HttpClient
@@ -40,10 +41,10 @@ class HttpClient
             }
             $q = rtrim($q, '&');
         } else {
-            $q = $query ?? '';
+            $q = $query;
         }
 
-        $q = empty($q) ?: "?{$q}";
+        $q = $q === null ? '' : "?{$q}";
 
         $response = $this->prepareClient("$uri$q")->get($uri, $query);
 
