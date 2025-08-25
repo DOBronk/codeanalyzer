@@ -11,8 +11,8 @@ class GetBranchesController extends Controller
     /**
      *  List all branches from repository
      */
-    public function __invoke(Request $request, string $owner, string $repo, GithubService $git)
+    public function __invoke(Request $request, string $owner, string $repository, GithubService $git)
     {
-        return $git->branches()->getBranches($owner, $repo);
+        return $git->branches()->getBranches($owner, $repository);
     }
 }
