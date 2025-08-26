@@ -37,14 +37,23 @@ class EtagCache extends HttpModule implements HandlesRequest, HandlesResponse
         if ($response->hasHeader('etag')) {
             $etag = $response->getHeaderLine('etag');
             $status = $response->getStatusCode();
+            $cached = trim((string) $response->getBody());
 
             if ($status === 304 && Cache::has($etag)) {
                 $data = Cache::get($etag);
+                if (Cache::has("Headers:$etag")) {
+                    $headers = json_decode(Cache::get("Headers:$etag"), true);
+                    foreach ($headers as $name => $values) {
+                        $response = $response->withAddedHeader($name, $values);
+                    }
+                }
+                $response = $response->withStatus(Cache::has("Status:$etag") ?  Cache::get("Status:$etag") : 200);
                 $response = $response->withBody(Utils::streamFor($data));
                 Log::info("Etag module: Served {$url} via cache!");
-            } else if ($status >= 200 and $status < 300) {
-                $cached = (string) $response->getBody();
+            } else if ($status >= 200 && $status < 300 && !empty($cached)) {
                 Cache::put($etag, $cached, $this->cache_expire + 30); // Keep value data 30 seconds longer for request
+                Cache::put("Headers:$etag", json_encode($response->getHeaders()), $this->cache_expire + 30);
+                Cache::put("Status:$etag", $status, $this->cache_expire + 30);
                 Cache::put($this->genKey($url), $etag, $this->cache_expire);
                 $response = $response->withBody(Utils::streamFor($cached));
             } else if ($status === 304) {
@@ -58,6 +67,6 @@ class EtagCache extends HttpModule implements HandlesRequest, HandlesResponse
 
     private function genKey(string $url)
     {
-        return "{$this->apiKey}{$url}";
+        return "{$this->apiKey}::-{$url}";
     }
 }

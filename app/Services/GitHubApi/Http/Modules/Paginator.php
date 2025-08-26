@@ -7,8 +7,10 @@ use App\Services\GitHubApi\Abstracts\HttpModule;
 use App\Services\GitHubApi\Contracts\HandlesResponse;
 use Illuminate\Support\Str;
 use GuzzleHttp\Psr7\Utils;
-use Illuminate\Support\Facades\Log;
 use Psr\Http\Message\ResponseInterface;
+use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Log;
+
 
 class Paginator extends HttpModule implements HandlesResponse
 {
@@ -18,9 +20,9 @@ class Paginator extends HttpModule implements HandlesResponse
     {
         $body = [];
         $next = $url;
+        Log::info("Paginator called " . $response->getStatusCode());
 
         do {
-            $response = $this->makeHeader($response, $next);
             $data = json_decode((string) $response->getBody(), true) ?? [];
             $body = array_merge($body, $data);
             $next = $this->nextUrl($response);
@@ -37,23 +39,6 @@ class Paginator extends HttpModule implements HandlesResponse
             Utils::streamFor(json_encode($body))
         );
     }
-
-    // Workaround for if response is an etag match and cached result
-    private function makeHeader($response, string $url)
-    {
-        if ($response->hasHeader('link') || !str_contains($url, 'page=') || $response->getStatusCode() !== 304) {
-            return $response;
-        }
-
-        Log::info("Paginator cached url");
-
-        preg_match('/(?<!_)page=(\d+)/', $url, $matches);
-        $next = isset($matches[1]) ? ((int) $matches[1] + 1) : 2;
-        $nextUrl = preg_replace('/(?<!_)page=\d+/', "page={$next}", $url);
-
-        return $response->withAddedHeader('link', "<{$nextUrl}>; rel=\"next\"");
-    }
-
     private function nextUrl($response): ?string
     {
         if (!$response->hasHeader('link')) {
