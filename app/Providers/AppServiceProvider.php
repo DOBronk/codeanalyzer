@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
-use App\Services\GithubService;
+use App\Services\GitHubApi\GithubService;
 use App\Services\RabbitMqBroker;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -19,14 +19,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::define('hasAPI', function (User $user) {
             return $user->settings->gh_api_key != null;
-        });
-
-        $this->app->bind("App\Services\GithubService", function () {
-            if (Auth::check()) {
-                $key = Auth::user()->settings->gh_api_key;
-            }
-
-            return new GithubService(config('codeanalyzer.gh_uri'), $key ?? '');
         });
 
         $this->app->bind("App\Services\MessageBroker", function () {

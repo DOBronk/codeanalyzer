@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreIssueRequest;
 use App\Models\Jobissue;
 use App\Models\Jobitem;
-use App\Services\GithubService;
+use App\Services\GitHubApi\GithubService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 

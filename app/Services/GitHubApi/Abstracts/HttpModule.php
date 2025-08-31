@@ -3,13 +3,15 @@
 namespace App\Services\GitHubApi\Abstracts;
 
 use App\Services\GitHubApi\Contracts\HttpModuleInterface;
+use App\Services\GitHubApi\Traits\ShortNames;
 
 abstract class HttpModule
 {
+    use ShortNames;
+
     public string $className {
         get {
-            $fqclass = get_class($this);
-            return substr($fqclass, strrpos($fqclass, '\\') + 1);
+            return $this->shortClassName($this);
         }
     }
 }

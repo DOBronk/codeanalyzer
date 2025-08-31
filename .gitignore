@@ -11,6 +11,9 @@
 .env.production
 .phpactor.json
 .phpunit.result.cache
+.phpstorm.meta.php
+.localization-cache.json
+.devdbr
 Homestead.json
 Homestead.yaml
 npm-debug.log

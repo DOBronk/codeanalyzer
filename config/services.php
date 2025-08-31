@@ -13,7 +13,10 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
-    'github' => ['etag_timeout' => env('GITHUB_ETAG_CACHE_TIMEOUT', 3600 * 24)],
+    'github' => [
+        'etag_timeout' => env('GITHUB_ETAG_CACHE_TIMEOUT', 3600 * 24),
+        'per_page' => env("GITHUB_PER_PAGE", 100),
+    ],
 
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),

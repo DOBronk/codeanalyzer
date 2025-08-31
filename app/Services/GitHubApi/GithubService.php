@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\GitHubApi;
 
 use App\Services\GitHubApi\Abstracts\ApiController;
 use App\Services\GitHubApi\Branches\Branches;
@@ -34,10 +34,18 @@ class GithubService
         $this->httpClient->addModule(new EtagCache());
         $this->httpClient->addModule(new Paginator($this->httpClient));
     }
+    /**
+     * Returns the instance of itself
+     * @return GithubService
+     */
     public function getService(): self
     {
         return $this;
     }
+    /**
+     * Returns the laravel HTTP client handler
+     * @return HttpClient
+     */
     public function getHttpClient(): HttpClient
     {
         return $this->httpClient;

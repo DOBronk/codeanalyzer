@@ -10598,6 +10598,16 @@ namespace Illuminate\Support\Facades {
             return $instance->macroCall($method, $parameters);
         }
 
+        /**
+         * @see \App\Services\GitHubApi\ServiceProvider::boot()
+         * @return \Illuminate\Http\Client\PendingRequest
+         * @static
+         */
+        public static function github()
+        {
+            return \Illuminate\Http\Client\Factory::github();
+        }
+
             }
     /**
      * @see \Illuminate\Translation\Translator
@@ -23679,6 +23689,24 @@ namespace Illuminate\Testing {
         public static function inertiaProps($propName = null)
         {
             return \Illuminate\Testing\TestResponse::inertiaProps($propName);
+        }
+
+            }
+    }
+
+namespace Illuminate\Http\Client {
+    /**
+     * @mixin \Illuminate\Http\Client\PendingRequest
+     */
+    class Factory {
+        /**
+         * @see \App\Services\GitHubApi\ServiceProvider::boot()
+         * @return \Illuminate\Http\Client\PendingRequest
+         * @static
+         */
+        public static function github()
+        {
+            return \Illuminate\Http\Client\Factory::github();
         }
 
             }

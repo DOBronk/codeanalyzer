@@ -14,6 +14,7 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
 use Illuminate\Support\ViewErrorBag;
+use Illuminate\Support\Str;
 
 class CreateJobController extends Controller
 {
@@ -39,8 +40,7 @@ class CreateJobController extends Controller
         )
             ->withViewData(['vueHeader' => trans('job.create')]);
     }
-
-    public function store(StoreJobRequest $request): RedirectResponse
+    public function store(mixed $request): RedirectResponse
     {
         $redirect = redirect()->route('codeanalyzer.index');
 

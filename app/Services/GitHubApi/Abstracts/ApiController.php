@@ -2,7 +2,8 @@
 
 namespace App\Services\GitHubApi\Abstracts;
 
-use App\Services\GithubService;
+use Illuminate\Http\Client\Response;
+use App\Services\GitHubApi\GithubService;
 
 abstract class ApiController
 {
@@ -12,11 +13,11 @@ abstract class ApiController
     {
         return $this->git;
     }
-    protected function get(string $uri, array|string|null $query = null)
+    protected function get(string $uri, array|string|null $query = null): Response
     {
         return $this->http()->get($uri, $query);
     }
-    protected function post(string $uri, array $data = [])
+    protected function post(string $uri, array $data = []): Response
     {
         return $this->http()->post($uri, $data);
     }

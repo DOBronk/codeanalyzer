@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\GitResources;
 
 use Illuminate\Http\Request;
-use App\Services\GithubService;
+use App\Services\GitHubApi\GithubService;
 use App\Http\Controllers\Controller;
 
 class GetBranchesController extends Controller

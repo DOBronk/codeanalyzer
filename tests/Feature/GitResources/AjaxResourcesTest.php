@@ -28,6 +28,14 @@ class AjaxResourcesTest extends TestCase
         $response->assertStatus(200)
             ->assertJson($this->fakeData['branches']['response']);
     }
+    public function test_if_branches_request_redirects_when_no_login()
+    {
+        $params = $this->getParams(2);
+        $route = route('ajax.getbranches', $params);
+        $response = $this->get($route);
+
+        $response->assertStatus(302);
+    }
 
     public function test_if_repositories_are_sent_and_parsed()
     {
@@ -37,6 +45,15 @@ class AjaxResourcesTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson($this->fakeData['repo']['response']);
+    }
+
+    public function test_if_repositories_fail_with_wrong_data()
+    {
+        $route = route('ajax.getrepositories');
+        $params =  ['owner2' => "\"\"\""];
+        $response = $this->actingAs($this->user)->post($route, $params);
+
+        $response->assertStatus(200);
     }
 
     public function test_if_trees_are_sent_and_parsed()

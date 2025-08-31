@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\GitResources;
 
-use App\Services\GithubService;
+use App\Services\GitHubApi\GithubService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
