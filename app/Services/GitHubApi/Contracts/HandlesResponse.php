@@ -6,5 +6,5 @@ use Psr\Http\Message\ResponseInterface;
 
 interface HandlesResponse
 {
-    public function handleResponse(ResponseInterface $response, string $url): ResponseInterface;
+    public function handleResponse(ResponseInterface $response): ResponseInterface;
 }

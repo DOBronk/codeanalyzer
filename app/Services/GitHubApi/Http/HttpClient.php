@@ -12,6 +12,7 @@ use App\Services\GitHubApi\Traits\GlobalSettings;
 use App\Services\GitHubApi\Traits\ShortNames;
 use GuzzleHttp\TransferStats;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 class HttpClient
@@ -19,8 +20,7 @@ class HttpClient
     use GlobalSettings, ShortNames;
     private $modules = [];
     private $exclude;
-    private $lastRoute;
-    private $middleware = ['Request' => [], 'Response' => [], 'TransferStats' => [], 'Final' => []];
+    private $middleware = ['Request' => [], 'Response' => [], 'TransferStats' => []];
 
     /**
      * Laravel HTTP Client handler
@@ -32,7 +32,6 @@ class HttpClient
             $this->addModules(is_array($modules) ? $modules : [$modules]);
         }
         Http::globalOptions(['on_stats' => function (TransferStats $stats) {
-            Log::info("GithubHttpClient: Stats accessed, has it got response: " . $stats->hasResponse() ? "yes" : "no");
             $this->callMiddlewhere($stats);
         }]);
         Http::globalRequestMiddleware(fn(RequestInterface $param) => $this->callMiddlewhere($param));
@@ -46,9 +45,7 @@ class HttpClient
      */
     public function get(string $uri, mixed $query = null): Response
     {
-        $response = $this->prepareClient()->get($uri, $query);
-
-        return $this->callMiddlewhere($response);
+        return  $this->prepareClient()->get($uri, $query);
     }
     /**
      * HTTP post 
@@ -57,9 +54,7 @@ class HttpClient
      */
     public function post(string $uri, array $data = []): Response
     {
-        $response = $this->prepareClient()->post($uri, $data);
-
-        return $this->callMiddlewhere($response);
+        return $this->prepareClient()->post($uri, $data);
     }
     /**
      * Add a HttpModule to the HTTP client handler
@@ -68,17 +63,14 @@ class HttpClient
      */
     public function addModule(HttpModule $mod)
     {
-        $loaded = false;
-
         foreach (array_keys($this->middleware) as $mw) {
             if (is_a($mod, "App\Services\GitHubApi\Contracts\Handles{$mw}")) {
-                Log::info("HttpClient: Added {$mod->className} to $mw middlewhere");
                 $this->middleware[$mw][$mod->className] = [$mod, "handle{$mw}"];
                 $loaded = true;
             }
         }
 
-        if (!$loaded) {
+        if (!isset($loaded)) {
             throw new \ErrorException("Module {$mod->className} cannot be loaded, no matching handler implementations found");
         }
 
@@ -150,39 +142,28 @@ class HttpClient
 
     private function callMiddlewhere(mixed $param): mixed
     {
-        $mw = $this->mapMiddlewhere($param);
-
-        foreach ($this->middleware[$mw] as $name => $cb) {
-            if (!in_array($name, $this->exclude)) {
-                $param = $cb($param, $this->lastRoute);
+        if (($mw = $this->mapMiddlewhere($param)) !== null) {
+            foreach ($this->middleware[$mw] as $name => $cb) {
+                if (!in_array($name, $this->exclude)) {
+                    $param = $cb($param);
+                }
             }
         }
-
         return $param;
     }
-    private function mapMiddlewhere(mixed $param): string
+    private function mapMiddlewhere(mixed $param): ?string
     {
-        if ($param instanceof RequestInterface) {
-
-            $query = $param->getUri()->getQuery();
-            $path = $param->getUri()->getPath();
-            $this->lastRoute = empty($query) ? $path : "$path?$query";
-            return 'Request';
-        } else if ($param instanceof ResponseInterface) {
-            return 'Response';
-        } else {
+        if (Str::startsWith(get_class($param), 'GuzzleHttp')) {
             $interface = $this->shortClassName($param);
-            $search = array_keys($this->middleware);
-            unset($search[0], $search[1]); // Remove the default middleware from the search
-            Log::info("HttpClient: Mapping middlewhere array: " . print_r($search, true));
-            foreach ($search as $mw) {
-                if (str_contains($interface, $mw)) {
+
+            foreach (array_keys($this->middleware) as $mw) {
+                if ($interface === $mw) {
                     return $mw;
                 }
             }
         }
 
-        return 'Final';
+        return null;
     }
     // Temporarely exclude module until next request
     private function excludeModule(array|string $modules)

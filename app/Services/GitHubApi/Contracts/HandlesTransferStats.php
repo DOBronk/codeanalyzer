@@ -6,5 +6,5 @@ use GuzzleHttp\TransferStats;
 
 interface HandlesTransferStats
 {
-    public function handleTransferStats(TransferStats $stats, string $url);
+    public function handleTransferStats(TransferStats $stats);
 }

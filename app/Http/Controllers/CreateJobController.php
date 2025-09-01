@@ -40,7 +40,7 @@ class CreateJobController extends Controller
         )
             ->withViewData(['vueHeader' => trans('job.create')]);
     }
-    public function store(mixed $request): RedirectResponse
+    public function store(StoreJobRequest $request): RedirectResponse
     {
         $redirect = redirect()->route('codeanalyzer.index');
 
