@@ -8,6 +8,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Client\ClientInterface;
 use App\Services\GitHubApi\Traits\GlobalSettings;
 use App\Services\GitHubApi\Traits\ShortNames;
 use GuzzleHttp\TransferStats;
@@ -20,6 +21,7 @@ class HttpClient
     use GlobalSettings, ShortNames;
     private $modules = [];
     private $exclude;
+    private $client;
     private $middleware = ['Request' => [], 'Response' => [], 'TransferStats' => []];
 
     /**
@@ -31,13 +33,16 @@ class HttpClient
         if (isset($modules)) {
             $this->addModules(is_array($modules) ? $modules : [$modules]);
         }
-        Http::globalOptions(['on_stats' => function (TransferStats $stats) {
+        // Enable HTTP/2.0
+        Http::globalOptions(['version' => 2.0, 'on_stats' => function (TransferStats $stats) {
             $this->callMiddlewhere($stats);
         }]);
-        Http::globalRequestMiddleware(fn(RequestInterface $param) => $this->callMiddlewhere($param));
-        Http::globalResponseMiddleware(fn(ResponseInterface $param) => $this->callMiddlewhere($param));
-    }
 
+        // Make a reusable client
+        $this->client = Http::github()->withRequestMiddleware(fn(RequestInterface $param) => $this->callMiddlewhere($param))
+            ->withResponseMiddleware(fn(ResponseInterface $param) => $this->callMiddlewhere($param))
+            ->withToken($this->apiKey)->buildClient();
+    }
     /**
      * HTTP Get 
      * @param string                Url string
@@ -137,7 +142,8 @@ class HttpClient
             $this->excludeModule($exclude);
         }
 
-        return Http::github()->withToken($this->apiKey);
+        return Http::github()->withHeader('Authorization', "Bearer {$this->apiKey}")
+            ->setClient($this->client);
     }
 
     private function callMiddlewhere(mixed $param): mixed
