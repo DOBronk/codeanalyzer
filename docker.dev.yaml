@@ -1,4 +1,11 @@
 services:
+# Share unix sockets
+  tmp:
+   image: busybox
+   command: chmod -R 777 /tmp/docker
+   volumes:
+     - /tmp/docker/
+
   mysql:
     image: mysql:8.3
     restart: always
@@ -13,22 +20,27 @@ services:
       MYSQL_PASSWORD: "${DB_PASSWORD}"
     volumes:
       - mysql:/var/lib/mysql
+      - ./my.cnf:/etc/my.cnf
+    volumes_from:
+      - tmp
     networks:
       - laravel-development
 
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
-    container_name: phpMyAdmin
-    restart: always
-    depends_on:
-      - mysql
-    environment:
-      PMA_HOST: mysql
-      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
-    ports:
+   image: phpmyadmin/phpmyadmin:latest
+       container_name: phpMyAdmin
+       restart: always
+   depends_on:
+     - mysql
+   environment:
+     PMA_HOST: mysql
+     MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+   volumes_from:
+      - tmp
+   ports:
       - "81:80"
-    networks:
-      - laravel-development
+  networks:
+   - laravel-development
 
   rabbitmq:
     image: rabbitmq:latest
@@ -60,15 +72,20 @@ services:
       - laravel-development
 
   web:
-    image: nginx:latest
+    privileged: true
+    image: macbre/nginx-http3:latest
     restart: always
+    volumes_from:
+      - tmp
     volumes:
+      - ./docker/development/nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./:/var/www
-      - ./docker/development/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "80:80"
+      - "443:443/udp"
+      - "443:443/tcp"
     environment:
-      - NGINX_HOST=localhost
+      - NGINX_HOST=codeanalyzer.bronk-ict.nl
     networks:
       - laravel-development
     depends_on:
@@ -79,7 +96,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/common/php-fpm/Dockerfile
-      target: development
+      target: production
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
@@ -89,13 +106,12 @@ services:
         XDEBUG_IDE_KEY: ${XDEBUG_IDE_KEY:-DOCKER}
         XDEBUG_LOG: /dev/stdout
         XDEBUG_LOG_LEVEL: 0
-    env_file:
-      # Load the environment variables from the Laravel application
-      - .env
     user: "${UID:-1000}:${GID:-1000}"
     volumes:
       # Mount the application code for live updates
       - ./:/var/www
+    volumes_from:
+      - tmp
     networks:
       - laravel-development
     restart: always
@@ -106,7 +122,7 @@ services:
         condition: service_started
 
   workspace:
-    # For the workspace service, we will also create a custom image to install and setup all the necessary stuff.
+    privileged: true
     build:
       context: .
       dockerfile: ./docker/development/workspace/Dockerfile
@@ -122,20 +138,17 @@ services:
     restart: always
     tty: true # Enables an interactive terminal
     stdin_open: true # Keeps standard input open for 'docker exec'
-    env_file:
-      - .env
+    volumes_from:
+      - tmp
     volumes:
       - ./:/var/www
     networks:
       - laravel-development
-    depends_on:
-      - rabbitmq
-      - mysql
 
   ollama:
     container_name: ollama
     image: ollama/ollama # Replace with specific Ollama version if needed
-    #    runtime: nvidia
+    runtime: nvidia
     deploy:
       resources:
         reservations:
@@ -156,14 +169,18 @@ services:
     restart: always
     ports:
       - "6379:6379"
-    command: redis-server --save 20 1 --loglevel warning --requirepass password
+    command: redis-server /var/redis/redis.conf #--save 20 1 --loglevel warning --requirepass password
     volumes:
       - cache:/data
+      - ./redis.conf:/var/redis/redis.conf
+    volumes_from:
+      - tmp
     networks:
       - laravel-development
 
 networks:
   laravel-development:
+    enable_ipv6: true
 
 configs:
   rabbitmq-plugins:

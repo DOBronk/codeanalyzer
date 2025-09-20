@@ -27,6 +27,9 @@ FROM nginx:alpine
 # -----------------------------------------------------------
 COPY ./docker/production/nginx/nginx.conf /etc/nginx/nginx.conf
 
+# Delete default nginx which prevents HTTP/2 & HTTP/3 from being activated
+RUN rm rm /etc/nginx/conf.d/default.conf 
+
 # Copy Laravel's public assets from the builder stage
 # -----------------------------------------------------------
 # We only need the 'public' directory from our Laravel app.
@@ -37,5 +40,5 @@ COPY --from=builder /var/www/public /var/www/public
 WORKDIR /var/www/public
 
 # Expose port 80 and start Nginx
-EXPOSE 80
+EXPOSE 80 443 443/udp
 CMD ["nginx", "-g", "daemon off;"]
