@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(MiddleSetLocale::class)
             ->web(HandleInertiaRequests::class);
+        #       $middleware->appendToGroup('web', [
+        #       \JustBetter\Http3EarlyHints\Middleware\AddHttp3EarlyHints::class,
+        #  ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -9,8 +9,8 @@ use App\Services\GitHubApi\Abstracts\HttpModule;
 use App\Services\GitHubApi\Contracts\HandlesResponse;
 
 /**
- * Filter module to apply filters on responses. Can be beneficial to greatly reduce memory footprint when processing asynchronous requests 
- * that receive many unused variables with no options to query these (see /users/repos in this project, where switching from rest API
+ * Filter module to apply filters on responses. Can reduce memory footprint when processing asynchronous requests 
+ * that receive many unused JSON variables without options to query columns specifically (see /users/repos in this project, where switching from rest API
  * to GraphQL does offer this, but only offers pagination by cursor that will force you to synchronously request all pages). 
  */
 

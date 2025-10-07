@@ -3,24 +3,20 @@
 namespace App\Services\GitHubApi;
 
 use InvalidArgumentException;
+use App\Services\GitHubApi\Events\SettingsChanged;
 
 final class Settings
 {
-    private static $instance;
     private $key;
     private $url;
     public readonly int $cache_timeout;
     public readonly int $per_page;
-
-    private function __construct()
+    public function __construct(string $url, ?string $key)
     {
         $this->per_page = config('services.github.per_page');
-        $this->cache_timeout = config('services.github.etag_timeout', 3600 * 24  * 7);
-        $this->url = 'https://api.github.com';
-    }
-    public static function getInstance(): self
-    {
-        return self::$instance ??= new self();
+        $this->cache_timeout = config('services.github.etag_timeout', 3600); # Developmental value 60 minutes cache
+        $this->url = $url;
+        $this->key = $key ?? '';
     }
 
     public string $apiKey {

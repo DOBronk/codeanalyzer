@@ -22,7 +22,7 @@ class GetBranchesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'owner' => 'required|string|max:39',        // 39 character limit by GitHub
+            'owner' => 'required|string|max:39|regex:/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i',        // 39 character limit by GitHub
             'repository' => 'required|string|max:100'   // 100 char limit
         ];
     }

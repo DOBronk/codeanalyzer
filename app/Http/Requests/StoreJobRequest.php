@@ -25,7 +25,7 @@ class StoreJobRequest extends FormRequest
             'selections' => ['required', 'array', 'min:1', 'max:500'],
             'selections.*.path' => ['required', 'string', 'max:500'],
             'selections.*.sha' => ['required', 'string', 'max:40'],
-            'owner' => ['required', 'string', 'max:39'],
+            'owner' => ['required', 'string', 'max:39', 'regex:/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i'],
             'repository' => ['required', 'string', 'max:100'],
             'branch' => ['required', 'string', 'max:250'],
         ];

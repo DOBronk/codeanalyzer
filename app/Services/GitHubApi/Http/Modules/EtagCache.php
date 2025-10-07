@@ -4,9 +4,9 @@ namespace App\Services\GitHubApi\Http\Modules;
 
 use App\Services\GitHubApi\Contracts\HandlesRequest;
 use App\Services\GitHubApi\Contracts\HandlesResponse;
-use App\Services\GitHubApi\Traits\GlobalSettings;
 use App\Services\GitHubApi\Abstracts\HttpModule;
 use App\Services\GitHubApi\Contracts\HandlesTransferStats;
+use App\Services\GitHubApi\Settings;
 use Illuminate\Support\Facades\Log;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -17,22 +17,25 @@ use Psr\Http\Message\UriInterface;
 
 class EtagCache extends HttpModule implements HandlesRequest, HandlesTransferStats, HandlesResponse
 {
-    use GlobalSettings;
-    private $statsUrl;
     private $responses;
 
-    public function __construct()
+    public function __construct(private Settings $settings)
     {
         $this->responses = [];
     }
 
     public function handleRequest(RequestInterface $request): RequestInterface
     {
-        $key = $this->genKey($this->convertUri($request->getUri()));
+        $key = $this->genKey($request->getUri());
 
         if (Cache::has($key)) {
-            $tag = Cache::get($key);
-            $request = $request->withAddedHeader('if-none-match', $tag);
+            $tag = $this->convertEtag(Cache::get($key));
+            $query = $request->getUri()->getQuery();
+            $headers = Cache::get($tag)['headers'];
+            // First response of a paginated result without querying a paginated page number should be ignored! 
+            if (!(key_exists('link', $headers) && !preg_match('/(?<!_)page=(\d+)/', $query, $matches))) {
+                $request = $request->withAddedHeader('if-none-match', $tag);
+            }
         }
 
         return $request;
@@ -40,53 +43,45 @@ class EtagCache extends HttpModule implements HandlesRequest, HandlesTransferSta
 
     public function handleTransferStats(TransferStats $stats)
     {
-        if ($stats->hasResponse()) {
+        if ($stats->hasResponse() && $stats->getResponse()->hasHeader('X-Github-Request-Id')) {
             $url = $this->convertUri($stats->getEffectiveUri());
-            if ($stats->getResponse()->hasHeader('X-Github-Request-Id')) {
-                $this->responses[$stats->getResponse()->getHeaderLine('X-Github-Request-Id')] = $url;
-            }
-            $this->statsUrl = $url;
+            $this->responses[$stats->getResponse()->getHeaderLine('X-Github-Request-Id')] = $url;
         }
     }
 
     public function handleResponse(ResponseInterface $response): ResponseInterface
     {
-        if ($response->hasHeader('etag')) {
-            $etag = $response->getHeaderLine('etag');
-            $status = $response->getStatusCode();
+        $status = $response->getStatusCode();
 
-            if ($response->hasHeader('X-Github-Request-Id')) {
-                $ghid = $response->getHeaderLine('X-Github-Request-Id');
-                $url = array_key_exists($ghid, $this->responses) ? $this->responses[$ghid] :  $this->statsUrl;
-                unset($this->responses[$ghid]);
-            } else {
-                $url = $this->statsUrl;
-            }
-
-            $body = trim((string) $response->getBody());
+        if ($status < 400 && $response->hasHeader('etag') && $response->hasHeader('X-Github-Request-Id')) {
+            $etag = $this->convertEtag($response->getHeaderLine('etag'));
+            $ghid = $response->getHeaderLine('X-Github-Request-Id');
+            $url = $this->responses[$ghid];
+            $body = (string) $response->getBody();
+            unset($this->responses[$ghid], $ghid);
 
             if ($status === 304 && Cache::has($etag)) {
                 $data = Cache::get($etag);
                 foreach ($data['headers'] as $name => $values) {
                     $response = $response->withAddedHeader($name, $values);
                 }
-                $response = $response->withStatus($data['status']);
-                $response = $response->withBody(Utils::streamFor($data['body']));
-                Log::info("Etag module: Served {$url} via cache!");
-            } else if ($status >= 200 && $status < 300 && !empty($body)) {
-                $cache = ['body' => $body, 'status' => $status, 'headers' => $response->getHeaders()];
-                $response = $response->withBody(Utils::streamFor($body));
-                Cache::put($etag, $cache, $this->cache_timeout + 30); // Keep value data 30 seconds longer for request
-                Cache::put($this->genKey($url), $etag, $this->cache_timeout);
-                Log::info("Etag module: New cache saved!");
-            } else if ($status === 304) {
+                $response = $response->withStatus($data['status'])->withBody(Utils::streamFor($data['body']));
+                Log::debug("Etag module: Served {$url} via cache!");
+            } else if ($status < 300 && !empty($body)) {
+                Cache::put($etag, ['body' => $body, 'status' => $status, 'headers' => $response->getHeaders()], $this->settings->cache_timeout + 30); // Keep value data 30 seconds longer for request
+                Cache::put($this->genKey($url), $etag, $this->settings->cache_timeout);
+                Log::debug("Etag response: $etag is put in cache!");
+            } else {
                 Log::error("Etag module: Key $etag in cache, but result not. Nothing to serve!");
             }
         }
 
-        $this->statsUrl = null;
-
         return $response;
+    }
+
+    private function convertEtag(string $etag)
+    {
+        return substr($etag, 0, 2) === 'W/' ? substr($etag, 2) : $etag;
     }
 
     private function convertUri(UriInterface $uri): string
@@ -94,8 +89,9 @@ class EtagCache extends HttpModule implements HandlesRequest, HandlesTransferSta
         $query = $uri->getQuery();
         return $uri->getPath() . ($query ? "?$query" : '');
     }
-    private function genKey(string $url)
+    private function genKey(UriInterface|string $url)
     {
-        return "{$this->apiKey}-{$url}";
+        $url = $url instanceof UriInterface ? $this->convertUri($url) : $url;
+        return "{$this->settings->apiKey}{$url}";
     }
 }

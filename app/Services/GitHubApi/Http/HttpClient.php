@@ -2,186 +2,114 @@
 
 namespace App\Services\GitHubApi\Http;
 
-use App\Services\GitHubApi\Abstracts\HttpModule;
+use App\Services\GitHubApi\Settings;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\RequestInterface;
-use Psr\Http\Client\ClientInterface;
-use App\Services\GitHubApi\Traits\GlobalSettings;
 use App\Services\GitHubApi\Traits\ShortNames;
 use GuzzleHttp\TransferStats;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use InvalidArgumentException;
+use GuzzleHttp\Client;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
 
 class HttpClient
 {
-    use GlobalSettings, ShortNames;
-    private $modules = [];
-    private $exclude;
+    use ShortNames;
     private $client;
-    private $middleware = ['Request' => [], 'Response' => [], 'TransferStats' => []];
-
+    private $params;
+    private $stack;
     /**
      * Laravel HTTP Client handler
-     * @param array<HttpModule>|HttpModule $module   Load modules (optional) 
+     * @param \App\Services\GitHubApi\Http\MiddlewareDispatcher $dispatcher
+     * @param \App\Services\GitHubApi\Http\ModuleManager $modules
      */
-    public function __construct(array|HttpModule|null $modules = null)
+    public function __construct(private MiddlewareDispatcher $dispatcher, private ModuleManager $modules, private Settings $settings)
     {
-        if (isset($modules)) {
-            $this->addModules(is_array($modules) ? $modules : [$modules]);
-        }
-        // Enable HTTP/2.0
-        Http::globalOptions(['version' => 2.0, 'on_stats' => function (TransferStats $stats) {
-            $this->callMiddlewhere($stats);
-        }]);
+        $this->params = [];
+        $this->stack = HandlerStack::create();
+        $this->stack->push(Middleware::mapRequest(fn(RequestInterface $param) => $this->dispatcher->dispatch($param, $this->modules->get(), $this->params)));
+        $this->stack->push(Middleware::mapResponse(fn(ResponseInterface $param) => $this->dispatcher->dispatch($param, $this->modules->get(), $this->params)));
 
+        Http::globalOptions(['version' => 2.0, 'on_stats' => function (TransferStats $stats) {
+            $this->dispatcher->dispatch($stats, $this->modules->get());
+        }]);
         // Make a reusable client
-        $this->client = Http::github()->withRequestMiddleware(fn(RequestInterface $param) => $this->callMiddlewhere($param))
-            ->withResponseMiddleware(fn(ResponseInterface $param) => $this->callMiddlewhere($param))
-            ->withToken($this->apiKey)->buildClient();
+        $this->client = Http::withRequestMiddleware(fn(RequestInterface $param) => $this->dispatcher->dispatch($param, $this->modules->get(), $this->params))
+            ->withResponseMiddleware(fn(ResponseInterface $param) => $this->dispatcher->dispatch($param, $this->modules->get(), $this->params))
+            ->buildClient();
     }
     /**
      * HTTP Get 
      * @param string                Url string
      * @param array|string $query   Array or string (optional) 
      */
-    public function get(string $uri, mixed $query = null): Response
+    public function get(string $uri, mixed $query = null, ?array $params = []): Response
     {
-        return  $this->prepareClient()->get($uri, $query);
+        return  $this->prepareClient($params)->get($uri, $query);
     }
     /**
      * HTTP post 
      * @param string                Url string
      * @param array $data           Array with data (optional) 
      */
-    public function post(string $uri, array $data = []): Response
+    public function post(string $uri, array $data = [], ?array $params = []): Response
     {
-        return $this->prepareClient()->post($uri, $data);
-    }
-    /**
-     * Add a HttpModule to the HTTP client handler
-     * @param HttpModule $mod   Instance of HttpModule
-     * @throws \ErrorException  Will be thrown if HttpModule has no implementations for handlers
-     */
-    public function addModule(HttpModule $mod)
-    {
-        foreach (array_keys($this->middleware) as $mw) {
-            if (is_a($mod, "App\Services\GitHubApi\Contracts\Handles{$mw}")) {
-                $this->middleware[$mw][$mod->className] = [$mod, "handle{$mw}"];
-                $loaded = true;
-            }
-        }
-
-        if (!isset($loaded)) {
-            throw new \ErrorException("Module {$mod->className} cannot be loaded, no matching handler implementations found");
-        }
-
-        $this->modules[] = $mod->className;
-    }
-    /**
-     * Add an array of modules to the HTTP client handler 
-     * @param array<HttpModule> $modules    Array with HttpModule instances
-     * @throws \InvalidArgumentException    Will be thrown when array contains a different object or type
-     */
-    public function addModules(array $modules)
-    {
-        foreach ($modules as $module) {
-            if ($module instanceof HttpModule) {
-                $this->addModule($module);
-            } else {
-                $type = is_object($module) ? get_class($module) : gettype($module);
-                throw new InvalidArgumentException("Only HttpModule as array values are accepted, $type given");
-            }
-        }
-    }
-    /**
-     * Remove a HttpModule from the HTTP client handler
-     * @param HttpModule|string $mod    HttpModule instance or short name of the class (case sensitive)  
-     * @return bool                     Returns false of module could not be deleted
-     */
-    public function deleteModule(string|HttpModule $mod): bool
-    {
-        $name = ($mod instanceof HttpModule) ? $mod->className : $mod;
-
-        if (!$this->isLoaded($name)) {
-            return false;
-        }
-
-        foreach (array_keys($this->middleware) as $key) {
-            unset($this->middleware[$key][$name]);
-        }
-
-        $this->modules = array_filter($this->modules, fn($item) => $item !== $name);
-
-        return true;
-    }
-    /**
-     * Returns if the given module or module name is loaded
-     * @param string|HttpModule $module     Module name (case sensitive) or module instance
-     * @return bool                         
-     */
-    public function isLoaded(string|HttpModule $module)
-    {
-        $name = is_string($module) ? $module : $module->className;
-        return !empty(array_column($this->middleware, $name));
+        return $this->prepareClient($params)->post($uri, $data);
     }
     /**
      * Prepares a laravel HTTP client PendingRequest with authentication and options configured
      * @param array<string>|string|bool $exclude    Set true to exclude all modules, or provide the name or array of names to exclude specific modules
      */
-    public function prepareClient(array|string|bool $exclude = false): PendingRequest
+    public function prepareClient(array $params = []): PendingRequest
     {
-        $this->exclude = [];
-
-        if ($exclude === true) {
-            $this->exclude = $this->modules;
-        } else if (!empty($exclude) && $exclude !== false) {
-            $this->excludeModule($exclude);
-        }
-
-        return Http::github()->withHeader('Authorization', "Bearer {$this->apiKey}")
-            ->setClient($this->client);
+        $this->params = [$this, ...$params];
+        return Http::github()->withHeader('Authorization', "Bearer {$this->settings->apiKey}")->setClient($this->client);
     }
 
-    private function callMiddlewhere(mixed $param): mixed
+    public function prepareGuzzle(array $headers = []): Client
     {
-        if (($mw = $this->mapMiddlewhere($param)) !== null) {
-            foreach ($this->middleware[$mw] as $name => $cb) {
-                if (!in_array($name, $this->exclude)) {
-                    $param = $cb($param);
-                }
-            }
-        }
-        return $param;
-    }
-    private function mapMiddlewhere(mixed $param): ?string
-    {
-        if (Str::startsWith(get_class($param), 'GuzzleHttp')) {
-            $interface = $this->shortClassName($param);
+        $headers = [
+            'Accept-Encoding' => 'gzip, deflate',
+            'Connection' => 'keep-alive',
+            'Accept' => 'application/vnd.github+json',
+            'X-GitHub-Api-Version' => '2022-11-28',
+            'User-Agent' => 'Codeanalyzer (gh_user: DOBronk)',
+            'Authorization' => "Bearer {$this->settings->apiKey}",
+            ...$headers
+        ];
 
-            foreach (array_keys($this->middleware) as $mw) {
-                if ($interface === $mw) {
-                    return $mw;
-                }
-            }
-        }
+        return new Client([
+            // Connection settings
+            'timeout' => 30,              // Total request timeout
+            'connect_timeout' => 10,      // Connection establishment timeout
+            'read_timeout' => 20,         // Data read timeout
 
-        return null;
-    }
-    // Temporarely exclude module until next request
-    private function excludeModule(array|string $modules)
-    {
-        $mods = is_array($modules) ? $modules : [$modules];
+            // HTTP settings
+            'http_version' => '2.0',      // Use HTTP/2 for better performance
+            'allow_redirects' => [
+                'max' => 3,               // Limit redirects
+                'strict' => true,
+                'referer' => true
+            ],
 
-        foreach ($mods as $module) {
-            if (!$this->isLoaded($module)) {
-                throw new \ErrorException("$module not found in loaded modules");
-            }
-        }
+            // SSL settings
+            'verify' => true,             // Keep SSL verification enabled
 
-        $this->exclude = $mods;
+            // Compression
+            'decode_content' => true,     // Automatically decode gzipped content
+
+            // Headers
+            'headers' => $headers,
+
+            'base_url' => config('codeanalyzer.gh_uri'),
+
+            'on_stats' => function (TransferStats $stats) {
+                $this->dispatcher->dispatch($stats, $this->modules->get());
+            },
+
+            'handler' =>  $this->stack
+        ]);
     }
 }

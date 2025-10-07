@@ -27,9 +27,7 @@ class SendBrokerQueueJob implements ShouldQueue
     {
         try {
             [$owner, $repository, $user, $tasks] = [$this->userjob->owner, $this->userjob->repository, $this->userjob->load(['user'])->user, []];
-            $git->apiKey = $this->userjob->user->settings->gh_api_key;
-            Log::info(sprintf("Key:%s\tModel: %s", $git->apiKey, print_r($this->userjob->user, true)));
-            Log::info(sprintf("Key:%s\tModel2: %s", $this->userjob->user->settings->gh_api_key, print_r($this->userjob->load(['user'])->user, true)));
+            $git->config()->apiKey = $this->userjob->user->settings->gh_api_key;
             $this->userjob->items()->each(function ($item) use ($git, $owner, $repository, &$tasks) {
                 $code = $git->data()->blobs()->getBlob($item->sha, $owner, $repository);
                 $tasks[] = JobDTO::make($this->userjob->id, $this->userjob->user->id, $item->id, $code)->toJson();

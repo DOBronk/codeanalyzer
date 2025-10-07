@@ -13,39 +13,42 @@ use Illuminate\Support\Facades\Log;
 
 class Paginator extends HttpModule implements HandlesResponse
 {
-    public function __construct(private HttpClient $client) {}
-    public function handleResponse(ResponseInterface $response): ResponseInterface
+    public function handleResponse(ResponseInterface $response, $params = null): ResponseInterface
     {
         $next = $this->nextUrl($response);
 
-        // If the next page is higher than 2 return response (either a single page is requested or paginator is working)
-        if (empty($next) || $this->getPageNumber($next[0]) <> 2) {
-            return $response;
+        // Only gather all paginated pages in one response if the next page is 2
+        if (!empty($next) && $this->getPageNumber($next[0]) === 2) {
+            $pages = $this->getPageCount($next);
+            $promises = $this->createPaginatedRequests($next[0], $pages, $params[0]);
+
+            Log::debug(sprintf("Paginator: Waiting for %s pages to be fetched", $pages - 1));
+            $promised = Promise\Utils::unwrap($promises);
+            Log::debug("Paginator: Fetching completed");
+            $body = json_decode((string) $response->getBody(), true);
+            $merge_type = array_is_list($body) ? 'array_merge' : 'array_merge_recursive';
+
+            foreach ($promised as $promise) {
+                $body = $merge_type($body, json_decode((string) $promise->getBody(), true));
+            }
+
+            $body = json_encode($body);
+            $response = $response->withBody(Utils::streamFor($body));
+            Log::debug("Paginator: Assembly completed");
         }
 
-        $pages = $this->getPageCount($next);
-        $promises = $this->createPaginatedRequests($next[0], $pages);
-
-        Log::info(sprintf("Paginator: Waiting for %s pages to be fetched", $pages - 1));
-        $promised = Promise\Utils::unwrap($promises);
-        Log::info("Paginator: Fetching completed, assembling final request");
-        $body = json_decode((string) $response->getBody(), true);
-
-        foreach ($promised as $promise) {
-            $body = array_merge_recursive($body, json_decode((string) $promise->getBody(), true));
-        }
-
-        $body = json_encode($body);
-        return $response->withBody(Utils::streamFor($body));
+        return $response;
     }
 
-    private function createPaginatedRequests(string $nextUrl, int $pages): array
+    private function createPaginatedRequests(string $nextUrl, int $pages, HttpClient $client): array
     {
         [$url, $query] = explode('?', urldecode($nextUrl), 2);
 
+        $client = $client->prepareGuzzle();
+
         for ($i = 2; $i <= $pages; $i++) {
-            $newquery = preg_replace('/(?<!_)page=(\d+)/', "page=$i", $query);
-            $promises[] = $this->client->prepareClient()->async()->get($url, $newquery);
+            $newquery = preg_replace('/(?<=[&\?]|^)page=(\d+)/', "page=$i", $query);
+            $promises[] = $client->getAsync("$url?$newquery");
         }
 
         return $promises;
@@ -62,7 +65,7 @@ class Paginator extends HttpModule implements HandlesResponse
 
     private function getPageNumber(string $url): int
     {
-        if (preg_match('/(?<!_)page=(\d+)/', $url, $matches)) {
+        if (preg_match('/(?<=[&\?]|^)page=(\d+)/', $url, $matches)) {
             return (int) $matches[1];
         }
 
@@ -84,6 +87,6 @@ class Paginator extends HttpModule implements HandlesResponse
             }
         }
 
-        return empty($next) ? null : [$next];
+        return empty($next) ? [1] : [$next];
     }
 }

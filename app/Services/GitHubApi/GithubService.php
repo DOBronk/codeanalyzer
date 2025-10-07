@@ -5,12 +5,12 @@ namespace App\Services\GitHubApi;
 use App\Services\GitHubApi\Abstracts\ApiController;
 use App\Services\GitHubApi\Branches\Branches;
 use App\Services\GitHubApi\GitData;
-use App\Services\GitHubApi\Http\Modules\EtagCache;
+use App\Services\GitHubApi\Http\HttpClient;
 use App\Services\GitHubApi\Http\Modules\Paginator;
 use App\Services\GitHubApi\Issues\Issues;
 use App\Services\GitHubApi\Repositories\Repositories;
 use App\Services\GitHubApi\Traits\GlobalSettings;
-use App\Services\GitHubApi\Http\HttpClient;
+use App\Services\GitHubApi\Http\Builder;
 
 /**
  * Service die met GitHub REST API communiceert of configureert
@@ -23,16 +23,12 @@ use App\Services\GitHubApi\Http\HttpClient;
  */
 class GithubService
 {
-    use GlobalSettings;
     private $httpClient;
-    public function __construct(string $url, string $key)
+    private Settings $settings;
+    public function __construct(string $url, ?string $key)
     {
-        $this->apiKey = $key;
-        $this->baseUrl = $url;
-        $this->httpClient = new httpClient();
-        // Important! Load the cache module first
-        $this->httpClient->addModule(new EtagCache());
-        $this->httpClient->addModule(new Paginator($this->httpClient));
+        $this->settings = new Settings($url, $key);
+        $this->httpClient = new Builder($this->settings);
     }
     /**
      * Returns the instance of itself
@@ -42,11 +38,12 @@ class GithubService
     {
         return $this;
     }
-    /**
-     * Returns the laravel HTTP client handler
-     * @return HttpClient
-     */
-    public function getHttpClient(): HttpClient
+
+    public function config(): Settings
+    {
+        return $this->settings;
+    }
+    public function getHttp(): Builder
     {
         return $this->httpClient;
     }

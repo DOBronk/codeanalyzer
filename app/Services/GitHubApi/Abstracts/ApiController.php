@@ -13,9 +13,9 @@ abstract class ApiController
     {
         return $this->git;
     }
-    protected function get(string $uri, array|string|null $query = null): Response
+    protected function get(string $uri, array|string|null $query = null, array $params = []): Response
     {
-        return $this->http()->get($uri, $query);
+        return $this->http()->get($uri, $query, $params);
     }
     protected function post(string $uri, array $data = []): Response
     {
@@ -23,6 +23,6 @@ abstract class ApiController
     }
     private function http()
     {
-        return $this->git->getHttpClient();
+        return $this->git->getHttp()->getClient();
     }
 }

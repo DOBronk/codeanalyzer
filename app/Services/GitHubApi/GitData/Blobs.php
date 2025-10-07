@@ -15,7 +15,7 @@ class Blobs extends ApiController
     public function getBlob(string $sha, string $owner, string $repository): string
     {
         $response = $this->get("/repos/{$owner}/{$repository}/git/blobs/{$sha}");
-        // Log::info(print_r($response, true));
+        Log::info(print_r($response, true));
         return base64_decode($response['content']);
     }
 }

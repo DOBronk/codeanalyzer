@@ -53,7 +53,7 @@ class AjaxResourcesTest extends TestCase
         $params =  ['owner2' => "\"\"\""];
         $response = $this->actingAs($this->user)->post($route, $params);
 
-        $response->assertStatus(200);
+        $response->assertRedirectBackWithErrors();
     }
 
     public function test_if_trees_are_sent_and_parsed()
