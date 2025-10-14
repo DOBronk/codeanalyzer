@@ -13,8 +13,8 @@
 
                     <div class="flex flex-col gap-2 w-6/20">
                         <label for="repo">Repository</label>
-                        <Select v-model="selectedRepository" @change="changeBranch" :options="repositories"
-                            :placeholder="repository" class="w-9/10" :disabled="!validOwner" />
+                        <Select v-model="selectedRepository" @change="changeBranch" :options="repositoriesItems"
+                            :placeholder="repository" :virtualScrollerOptions="{ lazy: true, onLazyLoad: onLazyLoad, itemSize: 30, delay: 0 }" class="w-9/10" :disabled="!validOwner" />
                         <input type="hidden" name="repository" :value="selectedRepository" />
                     </div>
 
@@ -114,6 +114,22 @@ const noFolders = computed(() =>
         : []
 );
 
+const repositoriesItems = ref();
+
+const onLazyLoad = (event) => {
+        if(repositories.value !== null) {
+        const { first, last } = event;
+        const _items = [...repositories.value];
+
+       for (let i = first; i < last; i++) {
+            _items[i] = repositories.value[i];
+        }
+
+        repositoriesItems.value = _items;
+
+}
+}
+
 let trees = {};
 
 watch(owner, _debounce((newVal) => {
@@ -155,8 +171,11 @@ function getRepositories(ownerRepo) {
         .post("/getrepositories", { owner: ownerRepo })
         .then((response) => {
             repositories.value = response.data[0];
+            repositoriesItems.value = Array.from({length: repositories.length});
+             repositoriesItems.value[0] = repositories.value[0];
             defaultBranches.value = response.data[1];
             selectedRepository.value = repositories.value[0];
+            
             changeBranch();
         })
         .catch(handleError);
