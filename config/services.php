@@ -14,8 +14,9 @@ return [
     |
     */
     'github' => [
-        'etag_timeout' => env('GITHUB_ETAG_CACHE_TIMEOUT', 3600 * 24),
+        'etag_timeout' => env('GITHUB_ETAG_CACHE_TIMEOUT', 600),
         'per_page' => env("GITHUB_PER_PAGE", 100),
+        'url' => env('GITHUB_API_URI', false),
     ],
 
     'postmark' => [
